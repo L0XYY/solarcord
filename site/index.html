@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SolarCord — Your community, brought to light</title>
+<meta name="description" content="SolarCord is a modern, fast, original community chat platform — servers, channels, voice, roles, moderation, bots and Solar+ premium, wrapped in a warm glassy solar aesthetic." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --night-900:#080a12; --night-800:#0e111c; --night-700:#161a28; --night-600:#202638;
+    --solar:#ffb840; --solar-glow:#ff9224; --solar-ember:#ff6040; --aurora:#8a7cff;
+    --ink:#edf0f8; --muted:#949cb0; --line:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--night-900);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background-image:
+      radial-gradient(1100px 560px at 82% -8%, rgba(255,146,36,.14), transparent 60%),
+      radial-gradient(900px 520px at -10% 108%, rgba(138,124,255,.14), transparent 55%);
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  .solar-text{background:linear-gradient(120deg,var(--solar),var(--solar-glow));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .btn{display:inline-flex;align-items:center;gap:8px;border-radius:14px;padding:13px 22px;font-weight:600;font-size:15px;transition:transform .15s,box-shadow .15s;cursor:pointer;border:none}
+  .btn-solar{background:linear-gradient(120deg,var(--solar),var(--solar-glow));color:var(--night-900);box-shadow:0 0 28px -6px rgba(255,146,36,.5)}
+  .btn-solar:hover{transform:translateY(-2px)}
+  .btn-ghost{background:var(--night-700);color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--night-600)}
+  .glass{background:rgba(14,17,28,.6);border:1px solid var(--line);backdrop-filter:blur(18px);border-radius:20px}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(8,10,18,.6);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px}
+  .logo .mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--solar),var(--solar-glow));display:grid;place-items:center;color:var(--night-900);font-weight:900;box-shadow:0 0 22px -6px rgba(255,146,36,.6)}
+  .nav-links{display:flex;align-items:center;gap:26px;color:var(--muted);font-size:15px;font-weight:500}
+  .nav-links a:hover{color:var(--ink)}
+  @media(max-width:760px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{text-align:center;padding:84px 0 50px}
+  .pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 16px;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:26px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--solar);box-shadow:0 0 12px var(--solar)}
+  h1{font-size:clamp(40px,7vw,76px);font-weight:900;letter-spacing:-.03em;line-height:1.02}
+  .sub{max-width:600px;margin:24px auto 0;font-size:clamp(16px,2.4vw,20px);color:var(--muted);line-height:1.6}
+  .cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:38px}
+
+  /* app preview */
+  .preview{margin:48px auto 0;max-width:960px}
+  .frame{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--night-900);box-shadow:0 40px 120px -30px rgba(0,0,0,.7)}
+  .titlebar{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#0b0e18;border-bottom:1px solid var(--line)}
+  .tl{width:11px;height:11px;border-radius:50%}
+  .app{display:flex;height:440px}
+  .dock{width:62px;background:rgba(8,10,18,.8);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:9px;padding:11px 0}
+  .dock .s{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--solar),var(--solar-glow));color:var(--night-900);display:grid;place-items:center;font-weight:900}
+  .dock .si{width:40px;height:40px;border-radius:13px;background:var(--night-700);display:grid;place-items:center;font-weight:600;font-size:13px;color:var(--ink)}
+  .dock .si.act{box-shadow:0 0 0 2px rgba(255,184,64,.6);color:var(--solar);background:rgba(255,184,64,.12)}
+  .side{width:172px;background:rgba(14,17,28,.5);border-right:1px solid var(--line);display:flex;flex-direction:column}
+  .side h4{font-size:14px;padding:14px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:5px}
+  .ch{display:flex;align-items:center;gap:7px;padding:7px 9px;margin:2px 8px;border-radius:8px;color:var(--muted);font-size:13px}
+  .ch.act{background:rgba(255,184,64,.12);color:var(--solar)}
+  .label{font-size:10px;letter-spacing:.08em;color:var(--muted);font-weight:600;padding:10px 15px 4px}
+  .chat{flex:1;display:flex;flex-direction:column;min-width:0;background:rgba(8,10,18,.3)}
+  .chead{height:46px;display:flex;align-items:center;gap:8px;padding:0 15px;border-bottom:1px solid var(--line);font-weight:600;font-size:14px}
+  .msgs{flex:1;padding:15px;display:flex;flex-direction:column;gap:14px;overflow:hidden}
+  .msg{display:flex;gap:11px}
+  .av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--night-900);flex-shrink:0}
+  .msg .nm{font-size:13px;font-weight:600}
+  .msg .tm{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+  .msg p{font-size:13px;color:rgba(237,240,248,.9);line-height:1.5;margin-top:2px}
+  .react{display:inline-flex;align-items:center;gap:4px;font-size:11px;border:1px solid rgba(255,184,64,.5);background:rgba(255,184,64,.12);color:var(--solar);border-radius:999px;padding:1px 8px;margin-top:5px}
+  .composer{margin:0 15px 15px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:rgba(14,17,28,.6);border-radius:14px;padding:11px 14px;color:var(--muted);font-size:13px}
+  @media(max-width:680px){.side{display:none}.app{height:380px}}
+
+  /* sections */
+  section{padding:64px 0}
+  .eyebrow{color:var(--solar);font-weight:600;font-size:14px;letter-spacing:.04em;text-align:center}
+  .h2{font-size:clamp(28px,4.5vw,42px);font-weight:800;letter-spacing:-.02em;text-align:center;margin-top:8px}
+  .lead{color:var(--muted);text-align:center;max-width:560px;margin:14px auto 0;font-size:17px;line-height:1.6}
+  .grid{display:grid;gap:18px;margin-top:44px}
+  .feat{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .card{padding:26px}
+  .card .ic{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,var(--solar),var(--solar-glow));margin-bottom:16px;box-shadow:0 0 22px -8px rgba(255,146,36,.6)}
+  .card.aur .ic{background:linear-gradient(135deg,var(--aurora),#5b8cff)}
+  .card h3{font-size:18px;font-weight:700}
+  .card p{color:var(--muted);margin-top:8px;font-size:15px;line-height:1.55}
+
+  .badges{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .badge{padding:20px;text-align:center}
+  .badge .bi{font-size:30px}
+  .badge h4{margin-top:10px;font-size:15px;font-weight:600}
+  .badge p{color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.5}
+
+  /* solar+ */
+  .premium{position:relative;overflow:hidden;padding:54px;text-align:center}
+  .premium::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,184,64,.12),rgba(138,124,255,.12));z-index:-1}
+  .perks{display:flex;gap:10px 22px;flex-wrap:wrap;justify-content:center;margin-top:26px;color:var(--muted);font-size:15px}
+  .perks span{display:inline-flex;align-items:center;gap:7px}
+
+  footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:14px}
+  footer .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .fnote{font-size:12.5px;max-width:520px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo"><span class="mark">S</span> SolarCord</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#badges">Badges</a>
+      <a href="#premium">Solar+</a>
+      <a href="#" class="btn btn-ghost" style="padding:9px 18px">Open app</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="pill glass"><span class="dot"></span> Now in early access</span>
+    <h1>Your community,<br><span class="solar-text">brought to light.</span></h1>
+    <p class="sub">A fast, modern home for your servers, channels, voice rooms and friends — wrapped in a warm, glassy solar aesthetic. Original, premium, and built to grow.</p>
+    <div class="cta">
+      <a href="#" class="btn btn-solar">Create your account</a>
+      <a href="#features" class="btn btn-ghost">See what's inside</a>
+    </div>
+
+    <div class="preview">
+      <div class="frame">
+        <div class="titlebar">
+          <span class="tl" style="background:var(--solar-ember)"></span>
+          <span class="tl" style="background:var(--solar)"></span>
+          <span class="tl" style="background:#1d9e75"></span>
+          <span style="margin-left:8px;font-size:11px;color:var(--muted)">solarcord.app</span>
+        </div>
+        <div class="app">
+          <div class="dock">
+            <div class="s">S</div>
+            <div style="width:28px;height:1px;background:var(--line)"></div>
+            <div class="si act">PF</div>
+            <div class="si">CN</div>
+            <div class="si" style="color:var(--solar)">+</div>
+            <div class="si" style="color:#1d9e75">🧭</div>
+          </div>
+          <div class="side">
+            <h4>Pixel Forge <span style="color:var(--solar)">☀</span></h4>
+            <div class="label">TEXT CHANNELS</div>
+            <div class="ch"># welcome</div>
+            <div class="ch act"># general</div>
+            <div class="ch"># showcase</div>
+            <div class="label">VOICE</div>
+            <div class="ch">🔊 Lounge</div>
+          </div>
+          <div class="chat">
+            <div class="chead"><span style="color:var(--muted)">#</span> general</div>
+            <div class="msgs">
+              <div class="msg">
+                <div class="av" style="background:var(--aurora)">NV</div>
+                <div><div class="nm">Nova<span class="tm">Today at 14:02</span></div>
+                <p>welcome to the forge, everyone — drop your pixel art in #showcase ✦</p>
+                <span class="react">🔥 4</span></div>
+              </div>
+              <div class="msg">
+                <div class="av" style="background:#1d9e75">KP</div>
+                <div><div class="nm">Kai<span class="tm">Today at 14:05</span></div>
+                <p>just posted mine! the parallax took forever but worth it</p></div>
+              </div>
+              <div class="msg">
+                <div class="av" style="background:var(--solar-glow)">Mw</div>
+                <div><div class="nm">Meadow<span class="tm">Today at 14:07</span></div>
+                <p>that's gorgeous 😍 what palette did you use?</p></div>
+              </div>
+            </div>
+            <div class="composer"><span style="flex:1">Message #general</span><span style="color:var(--solar)">↑</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <p class="eyebrow">Everything your community needs</p>
+    <h2 class="h2">One platform, fully featured</h2>
+    <p class="lead">Real-time from the ground up — messages, presence, voice and moderation, all in a clean, rounded, premium interface.</p>
+    <div class="grid feat">
+      <div class="card glass"><div class="ic"></div><h3>Real-time everything</h3><p>Messages, typing, presence and voice states delivered instantly over a fast WebSocket gateway.</p></div>
+      <div class="card glass aur"><div class="ic"></div><h3>Powerful roles</h3><p>A 64-bit permission system with role hierarchy, colours and per-channel overrides.</p></div>
+      <div class="card glass"><div class="ic"></div><h3>Servers &amp; channels</h3><p>Text, voice, announcements and more — organised, searchable, and yours to shape.</p></div>
+      <div class="card glass aur"><div class="ic"></div><h3>DMs &amp; friends</h3><p>One-to-one and group DMs, friend requests, and a home for every conversation.</p></div>
+      <div class="card glass"><div class="ic"></div><h3>Safety built in</h3><p>Kick, ban, timeout, warnings, AutoMod keyword filters, reports and an audit log.</p></div>
+      <div class="card glass aur"><div class="ic"></div><h3>Bots &amp; webhooks</h3><p>A developer portal with bot tokens and incoming webhooks so anything can post.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="badges">
+  <div class="wrap">
+    <p class="eyebrow">Original recognition</p>
+    <h2 class="h2">SolarCord server badges</h2>
+    <p class="lead">Communities earn original badges that appear beside their name and across Discovery.</p>
+    <div class="grid badges">
+      <div class="badge glass"><div class="bi">☀</div><h4>Verified</h4><p>Official brands, creators and organisations.</p></div>
+      <div class="badge glass"><div class="bi">🤝</div><h4>Solar Partner</h4><p>High-quality, active communities.</p></div>
+      <div class="badge glass"><div class="bi">🌐</div><h4>Community</h4><p>Public, moderated, rules-screened spaces.</p></div>
+      <div class="badge glass"><div class="bi">🚀</div><h4>Boosted</h4><p>Powered up by member boosts.</p></div>
+      <div class="badge glass"><div class="bi">🛡</div><h4>Safe Community</h4><p>Meets SolarCord's safety standards.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="premium">
+  <div class="wrap">
+    <div class="premium glass">
+      <p class="eyebrow">Premium, the SolarCord way</p>
+      <h2 class="h2" style="margin-top:10px">Meet <span class="solar-text">Solar+</span></h2>
+      <p class="lead">Animated avatars, profile themes, HD streaming, bigger uploads, more emoji — and server boosts that unlock perks for everyone.</p>
+      <div class="perks">
+        <span>✦ Animated avatars</span><span>✦ Profile banners &amp; themes</span><span>✦ HD streaming</span>
+        <span>✦ Bigger uploads</span><span>✦ Server boosts</span><span>✦ Evolving subscriber badge</span>
+      </div>
+      <div class="cta" style="margin-top:30px"><a href="#" class="btn btn-solar">Get Solar+</a></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo"><span class="mark">S</span> SolarCord</div>
+    <p class="fnote">SolarCord is an original product. It does not use Discord's name, logos, icons, colours or UI assets — Discord is referenced only as feature inspiration.</p>
+    <span>© 2026 SolarCord</span>
+  </div>
+</footer>
+
+</body>
+</html>
