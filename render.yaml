@@ -1,0 +1,61 @@
+# SolarCord — Render Blueprint (Postgres + Redis + API + web).
+# Deploy: push this repo to GitHub, then on Render → "New +" → "Blueprint" → pick the repo.
+# After the first deploy, set the two cross-service URLs (see docs/DEPLOY-NOW.md) and redeploy the web.
+
+databases:
+  - name: solarcord-db
+    databaseName: solarcord
+    plan: free
+
+services:
+  # Redis (Key Value) for presence, pub/sub, rate limits, Socket.IO adapter.
+  - type: redis
+    name: solarcord-redis
+    plan: free
+    ipAllowList: [] # internal connections only
+    maxmemoryPolicy: noeviction
+
+  # Backend API + realtime gateway.
+  - type: web
+    name: solarcord-api
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm db:generate && pnpm --filter @solarcord/api build
+    startCommand: pnpm db:push && pnpm db:seed && node apps/api/dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: solarcord-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: solarcord-redis
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: REFRESH_TOKEN_TTL_DAYS
+        value: "30"
+      # Set this to the web service's URL after the first deploy (e.g. https://solarcord-web.onrender.com)
+      - key: WEB_ORIGIN
+        sync: false
+
+  # Next.js web client.
+  - type: web
+    name: solarcord-web
+    runtime: node
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile --prod=false && pnpm --filter @solarcord/web build
+    startCommand: pnpm --filter @solarcord/web exec next start -p $PORT
+    envVars:
+      # Set this to the API service's URL after the first deploy, then redeploy the web
+      # (NEXT_PUBLIC_* is baked at build time). e.g. https://solarcord-api.onrender.com
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
