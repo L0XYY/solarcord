@@ -17,6 +17,8 @@ import { FriendsPanel } from "@/components/FriendsPanel";
 import { ServerSettingsModal } from "@/components/ServerSettingsModal";
 import { DiscoveryPage } from "@/components/DiscoveryPage";
 import { WelcomeModal } from "@/components/WelcomeModal";
+import { UserSettingsModal } from "@/components/UserSettingsModal";
+import { ProfileCard } from "@/components/ProfileCard";
 import { has, Permission, type ChannelSummary } from "@solarcord/shared";
 import type {
   Channel,
@@ -59,6 +61,8 @@ export default function AppPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showUserSettings, setShowUserSettings] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
   // On mobile we show one pane at a time: false = list/sidebar, true = chat/friends.
   const [mobileChat, setMobileChat] = useState(false);
 
@@ -456,6 +460,7 @@ export default function AppPage() {
                   setActiveConv(c);
                   setMobileChat(true);
                 }}
+                onOpenUserSettings={() => setShowUserSettings(true)}
                 onLogout={logout}
               />
             ) : (
@@ -470,6 +475,7 @@ export default function AppPage() {
                 onInvite={() => setShowInvite(true)}
                 onSettings={() => setShowSettings(true)}
                 onShowWelcome={() => setShowWelcome(true)}
+                onOpenUserSettings={() => setShowUserSettings(true)}
                 onLogout={logout}
                 canManage={canManageServer}
               />
@@ -499,7 +505,7 @@ export default function AppPage() {
             )}
           </div>
 
-          {view === "server" && <MemberList members={members} />}
+          {view === "server" && <MemberList members={members} onSelectUser={(id) => setProfileUserId(id)} />}
         </>
       )}
 
@@ -527,6 +533,8 @@ export default function AppPage() {
         />
       )}
       {showWelcome && detail && <WelcomeModal serverId={detail.id} onClose={() => setShowWelcome(false)} />}
+      {showUserSettings && <UserSettingsModal onClose={() => setShowUserSettings(false)} />}
+      {profileUserId && <ProfileCard userId={profileUserId} onClose={() => setProfileUserId(null)} />}
     </main>
   );
 }

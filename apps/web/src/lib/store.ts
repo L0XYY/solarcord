@@ -11,6 +11,7 @@ export interface SelfUser {
   bio: string | null;
   pronouns: string | null;
   status: string;
+  customStatus: string | null;
   isStaff: boolean;
 }
 

@@ -91,6 +91,7 @@ export function toSelfUser(u: {
   bio: string | null;
   pronouns: string | null;
   status: string;
+  customStatus: string | null;
   isStaff: boolean;
 }) {
   return {
@@ -103,6 +104,7 @@ export function toSelfUser(u: {
     bio: u.bio,
     pronouns: u.pronouns,
     status: u.status,
+    customStatus: u.customStatus,
     isStaff: u.isStaff,
   };
 }

@@ -19,6 +19,7 @@ export function HomeSidebar({
   pendingCount,
   onSelectFriends,
   onSelectConversation,
+  onOpenUserSettings,
   onLogout,
 }: {
   conversations: ConversationSummary[];
@@ -27,6 +28,7 @@ export function HomeSidebar({
   pendingCount: number;
   onSelectFriends: () => void;
   onSelectConversation: (c: ConversationSummary) => void;
+  onOpenUserSettings: () => void;
   onLogout: () => void;
 }) {
   const user = useAuth((s) => s.user);
@@ -120,6 +122,13 @@ export function HomeSidebar({
             <p className="truncate text-sm font-semibold">{displayName(user)}</p>
             <p className="truncate text-xs text-muted">{statusLabel(user.status)}</p>
           </div>
+          <button
+            onClick={onOpenUserSettings}
+            title="User settings"
+            className="rounded-lg px-2 py-1 leading-none text-muted hover:bg-night-700 hover:text-ink"
+          >
+            ⚙
+          </button>
           <button
             onClick={onLogout}
             title="Log out"

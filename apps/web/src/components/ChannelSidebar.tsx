@@ -25,6 +25,7 @@ export function ChannelSidebar({
   onInvite,
   onSettings,
   onShowWelcome,
+  onOpenUserSettings,
   onLogout,
   canManage,
 }: {
@@ -35,6 +36,7 @@ export function ChannelSidebar({
   onInvite: () => void;
   onSettings: () => void;
   onShowWelcome: () => void;
+  onOpenUserSettings: () => void;
   onLogout: () => void;
   canManage: boolean;
 }) {
@@ -165,6 +167,13 @@ export function ChannelSidebar({
             <p className="truncate text-sm font-semibold">{displayName(user)}</p>
             <p className="truncate text-xs text-muted">{statusLabel(user.status)}</p>
           </div>
+          <button
+            onClick={onOpenUserSettings}
+            title="User settings"
+            className="rounded-lg px-2 py-1 leading-none text-muted hover:bg-night-700 hover:text-ink"
+          >
+            ⚙
+          </button>
           <button
             onClick={onLogout}
             title="Log out"

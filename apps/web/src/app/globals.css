@@ -2,66 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Dark (default) — deep solar night */
-  --night-900: 8 10 18;
-  --night-800: 14 17 28;
-  --night-700: 22 26 40;
-  --night-600: 32 38 56;
-  --solar: 255 184 64; /* warm yellow */
-  --solar-glow: 255 146 36; /* orange */
-  --solar-ember: 255 96 64;
-  --aurora: 138 124 255; /* subtle purple/blue */
-  --ink: 237 240 248;
-  --muted: 148 156 176;
+/* SolarCord — monochrome "glass" theme, macOS-inspired vibrancy. */
+:root,
+:root[data-theme="dark"] {
+  --night-900: 12 12 14; /* page */
+  --night-800: 22 22 26; /* panel base */
+  --night-700: 32 32 37;
+  --night-600: 46 46 52;
+  --solar: 244 244 247; /* accent — near white */
+  --solar-glow: 208 208 214;
+  --solar-ember: 255 69 58; /* destructive (kept functional) */
+  --aurora: 174 174 184; /* neutral mid */
+  --ink: 245 245 248;
+  --muted: 150 150 158;
   --line: 255 255 255;
 }
 
 :root[data-theme="light"] {
-  --night-900: 244 246 251;
+  --night-900: 242 242 245;
   --night-800: 255 255 255;
-  --night-700: 238 241 248;
-  --night-600: 226 230 240;
-  --solar: 234 140 20;
-  --solar-glow: 240 110 30;
-  --solar-ember: 230 70 50;
-  --aurora: 96 84 230;
-  --ink: 22 26 38;
-  --muted: 96 104 124;
-  --line: 12 16 28;
+  --night-700: 235 235 240;
+  --night-600: 223 223 229;
+  --solar: 26 26 30; /* accent — near black */
+  --solar-glow: 70 70 78;
+  --solar-ember: 215 48 44;
+  --aurora: 120 120 130;
+  --ink: 24 24 28;
+  --muted: 112 112 122;
+  --line: 0 0 0;
 }
 
 * {
   box-sizing: border-box;
 }
-
 html,
 body {
   height: 100%;
   margin: 0;
 }
-
 body {
   background:
-    radial-gradient(1200px 600px at 80% -10%, rgb(var(--solar-glow) / 0.12), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgb(var(--aurora) / 0.12), transparent 55%),
+    radial-gradient(900px 500px at 50% -15%, rgb(var(--line) / 0.05), transparent 60%),
     rgb(var(--night-900));
   color: rgb(var(--ink));
   font-family:
-    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter",
+    ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
 }
 
 @layer components {
-  /* Glassmorphism panel */
+  /* Frosted vibrancy panel */
   .glass {
-    @apply border border-line/10 bg-night-800/60 backdrop-blur-xl;
+    border: 1px solid rgb(var(--line) / 0.1);
+    background: rgb(var(--night-800) / 0.55);
+    backdrop-filter: blur(22px) saturate(1.5);
+    -webkit-backdrop-filter: blur(22px) saturate(1.5);
   }
   .glass-strong {
-    @apply border border-line/10 bg-night-800/85 backdrop-blur-2xl;
+    border: 1px solid rgb(var(--line) / 0.12);
+    background: rgb(var(--night-800) / 0.8);
+    backdrop-filter: blur(30px) saturate(1.6);
+    -webkit-backdrop-filter: blur(30px) saturate(1.6);
   }
   .solar-text {
-    background: linear-gradient(120deg, rgb(var(--solar)), rgb(var(--solar-glow)));
+    background: linear-gradient(120deg, rgb(var(--ink)), rgb(var(--muted)));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -69,19 +75,45 @@ body {
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:opacity-50;
   }
+  /* Primary = solid near-white (dark) / near-black (light) — clean macOS button */
   .btn-solar {
-    @apply btn text-night-900 shadow-glow;
-    background: linear-gradient(120deg, rgb(var(--solar)), rgb(var(--solar-glow)));
+    @apply btn;
+    color: rgb(var(--night-900));
+    background: rgb(var(--solar));
+    box-shadow: 0 1px 0 rgb(var(--line) / 0.2) inset, 0 6px 18px -8px rgb(0 0 0 / 0.5);
+  }
+  .btn-solar:hover {
+    background: rgb(var(--solar-glow));
   }
   .btn-ghost {
-    @apply btn bg-night-700/60 text-ink hover:bg-night-600/70;
+    @apply btn;
+    border: 1px solid rgb(var(--line) / 0.12);
+    background: rgb(var(--night-700) / 0.6);
+    color: rgb(var(--ink));
+  }
+  .btn-ghost:hover {
+    background: rgb(var(--night-600) / 0.7);
   }
   .field {
-    @apply w-full rounded-xl border border-line/10 bg-night-900/60 px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted focus:border-solar/60 focus:ring-2 focus:ring-solar/20;
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(var(--line) / 0.12);
+    background: rgb(var(--night-900) / 0.5);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: rgb(var(--ink));
+    outline: none;
+    transition: all 0.15s;
+  }
+  .field::placeholder {
+    color: rgb(var(--muted));
+  }
+  .field:focus {
+    border-color: rgb(var(--line) / 0.25);
+    box-shadow: 0 0 0 2px rgb(var(--line) / 0.1);
   }
 }
 
-/* Thin solar scrollbars */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -93,6 +125,6 @@ body {
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--solar-glow) / 0.6);
+  background: rgb(var(--muted) / 0.6);
   background-clip: content-box;
 }

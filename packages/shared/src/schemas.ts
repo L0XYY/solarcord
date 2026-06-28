@@ -19,6 +19,17 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+// ── User profile ──
+export const updateMeSchema = z.object({
+  displayName: z.string().min(1).max(64).nullable().optional(),
+  bio: z.string().max(300).nullable().optional(),
+  pronouns: z.string().max(40).nullable().optional(),
+  avatarUrl: z.string().url().nullable().optional(),
+  bannerUrl: z.string().url().nullable().optional(),
+  customStatus: z.string().max(128).nullable().optional(),
+  status: z.enum(["ONLINE", "IDLE", "DND", "INVISIBLE"]).optional(),
+});
+
 // ── Servers ──
 export const createServerSchema = z.object({
   name: z.string().min(2).max(64),

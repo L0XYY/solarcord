@@ -21,6 +21,7 @@ import { adminRoutes } from "./routes/admin.js";
 import { reportRoutes } from "./routes/reports.js";
 import { webhookRoutes } from "./routes/webhooks.js";
 import { developerRoutes } from "./routes/developer.js";
+import { userRoutes } from "./routes/users.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -75,6 +76,7 @@ export async function buildServer() {
   await app.register(reportRoutes);
   await app.register(webhookRoutes);
   await app.register(developerRoutes);
+  await app.register(userRoutes);
 
   return app;
 }
