@@ -3,239 +3,149 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SolarCord — Your community, brought to light</title>
-<meta name="description" content="SolarCord is a clean, modern community chat platform concept with servers, channels, voice, badges, discovery, moderation and Solar+ premium." />
+<title>SolarCord — Community Chat Reimagined</title>
+<meta name="description" content="SolarCord is a modern community chat app with servers, channels, badges, discovery, voice, profiles and premium Solar+ features." />
 <style>
 :root{
-  --bg:#070914;
-  --bg-2:#0b1020;
-  --panel:#10172a;
-  --panel-2:#141d33;
-  --panel-soft:rgba(16,23,42,.72);
-  --text:#f7f9ff;
-  --muted:#9aa6c0;
-  --muted-2:#69748d;
+  --bg:#050712;
+  --bg-2:#080b16;
+  --rail:#070915;
+  --sidebar:#0c1020;
+  --panel:#11172a;
+  --panel-2:#141b31;
+  --card:rgba(20,27,49,.74);
+  --card-2:rgba(255,255,255,.055);
   --line:rgba(255,255,255,.105);
-  --solar:#ffbf47;
-  --solar-2:#ff8f28;
-  --solar-3:#ff5f46;
-  --violet:#8b7cff;
-  --blue:#5ad7ff;
-  --green:#50e0a4;
-  --danger:#ff6b7a;
-  --shadow:0 24px 80px rgba(0,0,0,.45);
+  --line-strong:rgba(255,255,255,.18);
+  --text:#f8fbff;
+  --muted:#a5afc7;
+  --muted-2:#657086;
+  --solar:#ffbd4a;
+  --solar-2:#ff8a2a;
+  --solar-3:#ff5b37;
+  --violet:#8a7cff;
+  --blue:#5ddcff;
+  --green:#54e3a6;
+  --danger:#ff6577;
+  --shadow:0 30px 90px rgba(0,0,0,.48);
   --radius:24px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{
   min-height:100vh;
-  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   color:var(--text);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:
-    radial-gradient(900px 580px at 84% -10%,rgba(255,143,40,.23),transparent 62%),
-    radial-gradient(780px 520px at -12% 20%,rgba(139,124,255,.22),transparent 62%),
-    radial-gradient(650px 480px at 50% 115%,rgba(90,215,255,.12),transparent 65%),
-    linear-gradient(180deg,#070914 0%,#090d19 54%,#070914 100%);
+    radial-gradient(900px 560px at 86% -12%,rgba(255,138,42,.26),transparent 63%),
+    radial-gradient(850px 560px at -12% 4%,rgba(138,124,255,.18),transparent 62%),
+    radial-gradient(650px 420px at 60% 112%,rgba(93,220,255,.11),transparent 65%),
+    linear-gradient(180deg,#050712 0%,#070a15 48%,#050712 100%);
   overflow-x:hidden;
 }
-body::before{
+body:before{
   content:"";
   position:fixed;
   inset:0;
   pointer-events:none;
-  opacity:.4;
+  opacity:.44;
   background-image:
     linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
-  background-size:58px 58px;
-  mask-image:linear-gradient(to bottom,black,transparent 78%);
+  background-size:54px 54px;
+  mask-image:linear-gradient(to bottom,black 0%,transparent 82%);
+}
+body:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 50% 0%,rgba(255,255,255,.06),transparent 26%);
+  mix-blend-mode:screen;
 }
 a{color:inherit;text-decoration:none}
 button{font:inherit}
 .wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.solar-text{background:linear-gradient(120deg,var(--solar),var(--solar-2) 55%,#ffd98a);-webkit-background-clip:text;background-clip:text;color:transparent}
 .glass{
   border:1px solid var(--line);
-  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  background:linear-gradient(180deg,rgba(255,255,255,.082),rgba(255,255,255,.036));
   box-shadow:var(--shadow);
   backdrop-filter:blur(20px);
 }
-.badge-pill{
-  display:inline-flex;align-items:center;gap:10px;
-  border:1px solid rgba(255,191,71,.26);
-  background:rgba(255,191,71,.08);
-  color:#ffd891;
-  border-radius:999px;
-  padding:8px 14px;
-  font-size:13px;
-  font-weight:750;
-}
-.pulse-dot{width:8px;height:8px;border-radius:99px;background:var(--solar);box-shadow:0 0 0 0 rgba(255,191,71,.8);animation:pulse 2s infinite}
-@keyframes pulse{70%{box-shadow:0 0 0 12px rgba(255,191,71,0)}100%{box-shadow:0 0 0 0 rgba(255,191,71,0)}}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:10px;
-  border-radius:16px;
-  padding:14px 20px;
-  border:1px solid transparent;
-  font-size:15px;
-  font-weight:800;
-  cursor:pointer;
-  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
-  min-height:50px;
-}
-.btn svg{width:18px;height:18px}
-.btn:hover{transform:translateY(-2px)}
-.btn-primary{
-  color:#171007;
-  background:linear-gradient(135deg,var(--solar),var(--solar-2));
-  box-shadow:0 18px 48px rgba(255,143,40,.26),inset 0 1px 0 rgba(255,255,255,.45);
-}
-.btn-primary:hover{box-shadow:0 20px 58px rgba(255,143,40,.34),inset 0 1px 0 rgba(255,255,255,.45)}
-.btn-secondary{
-  color:var(--text);
-  border-color:var(--line);
-  background:rgba(255,255,255,.055);
-}
-.btn-secondary:hover{background:rgba(255,255,255,.085);border-color:rgba(255,255,255,.18)}
-.icon{
-  width:48px;height:48px;border-radius:16px;
-  display:grid;place-items:center;flex:0 0 auto;
-  color:#171007;
-  background:linear-gradient(135deg,var(--solar),var(--solar-2));
-  box-shadow:0 16px 36px rgba(255,143,40,.22),inset 0 1px 0 rgba(255,255,255,.45);
-}
-.icon svg{width:25px;height:25px}
-.icon.violet{color:#fff;background:linear-gradient(135deg,var(--violet),#5c8dff);box-shadow:0 16px 36px rgba(139,124,255,.2)}
-.icon.blue{color:#07121a;background:linear-gradient(135deg,var(--blue),#5f8cff);box-shadow:0 16px 36px rgba(90,215,255,.18)}
-.icon.green{color:#061710;background:linear-gradient(135deg,var(--green),#b8ff73);box-shadow:0 16px 36px rgba(80,224,164,.18)}
-.icon.red{color:#fff;background:linear-gradient(135deg,var(--danger),var(--solar-3));box-shadow:0 16px 36px rgba(255,95,70,.18)}
-
-/* navigation */
+.solar-text{background:linear-gradient(120deg,#ffe09b,var(--solar),var(--solar-2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .nav{
-  position:sticky;top:0;z-index:50;
+  position:sticky;
+  top:0;
+  z-index:50;
   border-bottom:1px solid var(--line);
-  background:rgba(7,9,20,.72);
+  background:rgba(5,7,18,.78);
   backdrop-filter:blur(18px);
 }
-.nav-inner{height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}
-.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:-.03em;font-size:21px}
+.nav-inner{height:74px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:950;letter-spacing:-.035em;font-size:21px}
 .brand-mark{
   position:relative;
-  width:40px;height:40px;border-radius:15px;
+  width:42px;height:42px;border-radius:16px;
   display:grid;place-items:center;
-  color:#171007;
-  background:linear-gradient(135deg,#ffe08b,var(--solar-2));
-  box-shadow:0 0 34px rgba(255,143,40,.32),inset 0 1px 0 rgba(255,255,255,.55);
+  color:#160f06;
+  background:linear-gradient(135deg,#ffe29b,var(--solar-2));
+  box-shadow:0 0 44px rgba(255,138,42,.36),inset 0 1px 0 rgba(255,255,255,.62);
   overflow:hidden;
 }
-.brand-mark svg{width:24px;height:24px;z-index:1}
-.brand-mark::after{content:"";position:absolute;width:54px;height:54px;border-radius:50%;border:1px solid rgba(20,10,0,.18);transform:translate(13px,-12px)}
-.nav-links{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px;font-weight:750}
-.nav-links a{padding:10px 12px;border-radius:12px;transition:background .18s,color .18s}
-.nav-links a:hover{color:var(--text);background:rgba(255,255,255,.055)}
+.brand-mark:after{content:"";position:absolute;width:57px;height:57px;border-radius:50%;border:1px solid rgba(22,15,6,.2);transform:translate(13px,-11px)}
+.brand-mark svg{width:23px;height:23px;position:relative;z-index:1}
+.nav-links{display:flex;align-items:center;gap:5px;color:var(--muted);font-size:14px;font-weight:780}
+.nav-links a{padding:10px 12px;border-radius:13px;transition:.18s ease}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,.06)}
 .nav-actions{display:flex;align-items:center;gap:10px}
-.nav-actions .btn{min-height:42px;padding:10px 15px;border-radius:14px;font-size:14px}
-.menu-btn{display:none;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);width:44px;height:44px;border-radius:14px;cursor:pointer}
-.menu-btn svg{width:22px;height:22px}
-.mobile-menu{display:none;border-top:1px solid var(--line);padding:12px 0 18px}
-.mobile-menu a{display:block;padding:12px 0;color:var(--muted);font-weight:800}
-.mobile-menu .btn{width:100%;margin-top:8px}
-
-/* hero */
-.hero{position:relative;padding:86px 0 74px}
-.hero::before,.hero::after{content:"";position:absolute;border-radius:999px;filter:blur(8px);pointer-events:none}
-.hero::before{width:10px;height:10px;background:var(--solar);left:13%;top:19%;box-shadow:0 0 26px var(--solar)}
-.hero::after{width:7px;height:7px;background:var(--blue);right:14%;top:28%;box-shadow:0 0 24px var(--blue)}
-.hero-grid{display:grid;grid-template-columns:1fr .93fr;gap:46px;align-items:center}
-.hero-copy h1{font-size:clamp(44px,6.6vw,82px);line-height:.96;letter-spacing:-.075em;font-weight:950;margin-top:22px;max-width:720px}
-.hero-copy p{max-width:620px;color:var(--muted);font-size:clamp(16px,2vw,20px);line-height:1.7;margin-top:24px}
-.hero-buttons{display:flex;flex-wrap:wrap;gap:13px;margin-top:34px}
-.hero-trust{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px;color:var(--muted);font-size:13px;font-weight:750}
-.hero-trust span{display:inline-flex;align-items:center;gap:8px}
-.hero-trust svg{width:16px;height:16px;color:var(--green)}
-.orbit-card{
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  min-height:48px;padding:13px 18px;border-radius:16px;
+  border:1px solid transparent;
+  cursor:pointer;font-weight:900;font-size:14px;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,border-color .18s ease;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn svg{width:18px;height:18px}
+.btn-primary{color:#150f07;background:linear-gradient(135deg,var(--solar),var(--solar-2));box-shadow:0 18px 46px rgba(255,138,42,.28),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-primary:hover{box-shadow:0 24px 56px rgba(255,138,42,.36),inset 0 1px 0 rgba(255,255,255,.55)}
+.btn-secondary{color:var(--text);border-color:var(--line);background:rgba(255,255,255,.055)}
+.btn-secondary:hover{background:rgba(255,255,255,.09);border-color:var(--line-strong)}
+.menu-btn{display:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.055);color:var(--text);cursor:pointer}
+.menu-btn svg{width:22px;height:22px}.mobile-menu{display:none;border-top:1px solid var(--line);padding:12px 0 18px}.mobile-menu a{display:block;padding:12px 0;color:var(--muted);font-weight:850}.mobile-menu .btn{width:100%;margin-top:8px}
+.badge-pill{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(255,189,74,.28);background:rgba(255,189,74,.09);color:#ffdc91;border-radius:999px;padding:8px 14px;font-size:13px;font-weight:900}
+.pulse-dot{width:8px;height:8px;border-radius:999px;background:var(--green);box-shadow:0 0 0 0 rgba(84,227,166,.75);animation:pulse 2s infinite}@keyframes pulse{70%{box-shadow:0 0 0 12px rgba(84,227,166,0)}100%{box-shadow:0 0 0 0 rgba(84,227,166,0)}}
+.hero{position:relative;padding:86px 0 58px}.hero-grid{display:grid;grid-template-columns:.94fr 1.06fr;gap:42px;align-items:center}.hero-copy h1{font-size:clamp(44px,6.8vw,86px);line-height:.94;letter-spacing:-.08em;font-weight:1000;margin-top:22px}.hero-copy p{max-width:650px;color:var(--muted);font-size:clamp(16px,2vw,19px);line-height:1.75;margin-top:22px}.hero-buttons{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}.hero-trust{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;color:#cbd4e8;font-size:13px;font-weight:850}.hero-trust span{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:8px 10px;border-radius:999px}.hero-trust svg{width:15px;height:15px;color:var(--green)}
+.app-shell{
   position:relative;
-  min-height:580px;
-  border-radius:32px;
-  overflow:hidden;
-  padding:20px;
+  border-radius:34px;
+  padding:12px;
   background:
-    radial-gradient(500px 300px at 48% 24%,rgba(255,191,71,.22),transparent 62%),
-    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow:0 34px 110px rgba(0,0,0,.52);
+    radial-gradient(500px 260px at 56% 5%,rgba(255,189,74,.2),transparent 64%),
+    linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.035));
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 36px 120px rgba(0,0,0,.55);
+  overflow:hidden;
 }
-.orbit-card::before{
-  content:"";position:absolute;inset:-80px;
-  background:conic-gradient(from 50deg,transparent,rgba(255,191,71,.18),transparent 26%,rgba(139,124,255,.16),transparent 54%,rgba(90,215,255,.12),transparent);
-  animation:spin 14s linear infinite;
-}
-@keyframes spin{to{transform:rotate(1turn)}}
-.app-window{position:relative;z-index:1;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:#080b15;box-shadow:0 30px 90px rgba(0,0,0,.42)}
-.window-top{height:48px;display:flex;align-items:center;gap:9px;padding:0 15px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}
-.win-dot{width:11px;height:11px;border-radius:50%}.win-dot.one{background:#ff6b7a}.win-dot.two{background:#ffbf47}.win-dot.three{background:#50e0a4}
-.window-url{margin-left:6px;color:var(--muted-2);font-size:12px;font-weight:750}
-.app-body{display:grid;grid-template-columns:66px 174px minmax(0,1fr);height:455px}
-.server-rail{background:rgba(5,7,13,.78);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0}
-.server-icon{width:42px;height:42px;border-radius:16px;display:grid;place-items:center;font-weight:950;font-size:13px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text)}
-.server-icon.home{background:linear-gradient(135deg,var(--solar),var(--solar-2));color:#151006;border:none;box-shadow:0 15px 32px rgba(255,143,40,.22)}
-.server-icon.active{border-color:rgba(255,191,71,.45);background:rgba(255,191,71,.1);color:#ffd891}
-.server-icon.add{color:var(--green)}
-.channel-panel{background:rgba(15,21,38,.82);border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;min-width:0}
-.server-name{font-size:14px;font-weight:950;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 14px;border-bottom:1px solid var(--line)}
-.verified-mini{width:18px;height:18px;color:var(--solar);flex:0 0 auto}
-.channel-label{font-size:10px;letter-spacing:.12em;color:var(--muted-2);font-weight:950;margin:15px 6px 7px}
-.channel{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:800;padding:8px 9px;border-radius:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.channel svg{width:15px;height:15px;color:var(--muted-2)}
-.channel.active{color:#ffd891;background:rgba(255,191,71,.1)}
-.channel.active svg{color:var(--solar)}
-.user-mini{margin-top:auto;display:flex;align-items:center;gap:9px;padding:10px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid var(--line)}
-.avatar{width:34px;height:34px;border-radius:13px;display:grid;place-items:center;font-size:12px;font-weight:950;color:#151006;background:linear-gradient(135deg,var(--solar),var(--solar-2))}
-.user-mini div:nth-child(2){min-width:0}.user-mini b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-mini span{display:block;font-size:11px;color:var(--green)}
-.chat-panel{background:rgba(8,11,22,.72);display:flex;flex-direction:column;min-width:0}
-.chat-head{height:54px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 16px;gap:12px}
-.chat-title{display:flex;align-items:center;gap:9px;font-weight:950}.chat-title svg{width:18px;height:18px;color:var(--muted-2)}
-.chat-tools{display:flex;gap:8px}.tool-btn{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.045);display:grid;place-items:center;color:var(--muted)}.tool-btn svg{width:16px;height:16px}
-.messages{flex:1;padding:18px;display:flex;flex-direction:column;gap:17px;overflow:hidden}
-.message{display:flex;gap:12px}.message .avatar{flex:0 0 auto}.message-content{min-width:0}.message-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.message-line b{font-size:13px}.message-line time{font-size:11px;color:var(--muted-2);font-weight:800}.message p{font-size:13px;color:rgba(247,249,255,.86);line-height:1.55;margin-top:3px}.reaction{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#ffd891;border:1px solid rgba(255,191,71,.35);background:rgba(255,191,71,.09);border-radius:999px;padding:3px 8px;margin-top:8px}.composer{margin:0 16px 16px;border:1px solid var(--line);background:rgba(255,255,255,.055);min-height:48px;border-radius:16px;display:flex;align-items:center;gap:10px;padding:0 13px;color:var(--muted);font-size:13px;font-weight:750}.composer span{flex:1}.composer svg{width:18px;height:18px;color:var(--solar)}
-.floating-card{position:absolute;z-index:2;border-radius:18px;border:1px solid var(--line);background:rgba(10,14,27,.83);backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.34);padding:14px;animation:floaty 4.7s ease-in-out infinite}
-.floating-card.one{right:8px;top:88px;width:172px}.floating-card.two{left:2px;bottom:64px;width:190px;animation-delay:-1.7s}
-@keyframes floaty{50%{transform:translateY(-10px)}}
-.float-title{font-size:12px;color:var(--muted);font-weight:850;margin-bottom:8px}.float-row{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:900}.spark{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--violet),#5c8dff);display:grid;place-items:center}.spark svg{width:18px;height:18px}.mini-bars{display:grid;gap:5px;margin-top:10px}.mini-bars span{height:7px;border-radius:999px;background:rgba(255,255,255,.09)}.mini-bars span:nth-child(1){width:92%}.mini-bars span:nth-child(2){width:68%}.mini-bars span:nth-child(3){width:80%}
-
-/* sections */
-.section{padding:86px 0}
-.section-head{text-align:center;max-width:680px;margin:0 auto}.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#ffd891;font-size:13px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.eyebrow::before,.eyebrow::after{content:"";width:22px;height:1px;background:rgba(255,191,71,.36)}
-.section h2{font-size:clamp(32px,4.6vw,52px);letter-spacing:-.055em;line-height:1.04;font-weight:950;margin-top:12px}.section .lead{color:var(--muted);font-size:17px;line-height:1.72;margin-top:15px}.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(4,1fr);margin-top:30px}.stat{border-radius:22px;padding:22px;text-align:center}.stat strong{display:block;font-size:28px;letter-spacing:-.04em}.stat span{display:block;color:var(--muted);font-size:13px;font-weight:800;margin-top:4px}.feature-grid{grid-template-columns:repeat(3,1fr);margin-top:42px}.feature-card{border-radius:var(--radius);padding:24px;min-height:236px;transition:transform .18s ease,border-color .18s ease,background .18s ease}.feature-card:hover{transform:translateY(-4px);border-color:rgba(255,191,71,.25);background:linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.042))}.feature-card h3{font-size:18px;letter-spacing:-.02em;margin-top:17px}.feature-card p{color:var(--muted);font-size:14.5px;line-height:1.65;margin-top:9px}.feature-list{display:grid;gap:8px;margin-top:16px}.feature-list span{display:flex;align-items:center;gap:8px;color:#cbd4e8;font-size:13px;font-weight:750}.feature-list svg{width:15px;height:15px;color:var(--green)}
-
-/* badges */
-.badge-grid{grid-template-columns:repeat(5,1fr);margin-top:42px}.solar-badge{position:relative;overflow:hidden;border-radius:24px;padding:22px;text-align:center;transition:transform .18s ease,border-color .18s ease}.solar-badge:hover{transform:translateY(-5px);border-color:rgba(255,191,71,.28)}.solar-badge::before{content:"";position:absolute;inset:0;background:radial-gradient(170px 90px at 50% 0%,rgba(255,191,71,.12),transparent 70%);pointer-events:none}.badge-icon{position:relative;width:76px;height:76px;margin:0 auto 16px;display:grid;place-items:center}.badge-icon svg{width:76px;height:76px;filter:drop-shadow(0 14px 24px rgba(0,0,0,.32))}.solar-badge h3{font-size:16px;letter-spacing:-.02em}.solar-badge p{color:var(--muted);font-size:13px;line-height:1.55;margin-top:7px}.badge-tag{display:inline-flex;align-items:center;gap:5px;margin-top:13px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.045);padding:6px 9px;color:#dbe3f6;font-size:11px;font-weight:900}.badge-tag svg{width:13px;height:13px;color:var(--solar)}
-
-/* discovery */
-.discovery{display:grid;grid-template-columns:.92fr 1.08fr;gap:22px;align-items:stretch;margin-top:42px}.discovery-panel{border-radius:28px;padding:28px}.searchbox{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:14px 16px;color:var(--muted);font-weight:750}.searchbox svg{width:20px;height:20px}.category-list{display:grid;gap:10px;margin-top:18px}.category{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:17px;padding:13px 14px;font-weight:900}.category span{display:flex;align-items:center;gap:10px}.category svg{width:19px;height:19px;color:var(--solar)}.category small{color:var(--muted);font-size:12px}.server-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.discover-card{border-radius:24px;overflow:hidden}.cover{height:82px;background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.28),transparent 55%),linear-gradient(135deg,rgba(255,191,71,.8),rgba(139,124,255,.7))}.discover-card:nth-child(2) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.24),transparent 55%),linear-gradient(135deg,rgba(80,224,164,.7),rgba(90,215,255,.72))}.discover-card:nth-child(3) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,rgba(255,95,70,.75),rgba(255,191,71,.76))}.discover-card:nth-child(4) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,rgba(139,124,255,.8),rgba(255,143,40,.68))}.discover-body{padding:18px}.discover-top{display:flex;align-items:center;gap:11px;margin-top:-42px}.discover-logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:#0b1020;border:1px solid rgba(255,255,255,.18);font-weight:950}.discover-title{min-width:0}.discover-title b{font-size:15px;display:flex;align-items:center;gap:5px}.discover-title svg{width:15px;height:15px;color:var(--solar)}.discover-title span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.discover-body p{color:var(--muted);font-size:13px;line-height:1.55;margin-top:13px}.join-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}.members{display:flex;align-items:center;gap:6px;color:#cbd4e8;font-size:12px;font-weight:900}.online-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px rgba(80,224,164,.7)}.join-btn{border:1px solid rgba(255,191,71,.24);background:rgba(255,191,71,.09);color:#ffd891;border-radius:12px;padding:8px 11px;font-size:12px;font-weight:950}
-
-/* premium */
-.premium-wrap{position:relative;border-radius:34px;padding:1px;margin-top:42px;background:linear-gradient(135deg,rgba(255,191,71,.55),rgba(139,124,255,.42),rgba(90,215,255,.34))}.premium-card{position:relative;overflow:hidden;border-radius:33px;background:linear-gradient(135deg,rgba(16,23,42,.96),rgba(9,13,25,.94));padding:38px}.premium-card::before{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(255,191,71,.12);filter:blur(8px);right:-120px;top:-160px}.premium-content{position:relative;display:grid;grid-template-columns:1fr .82fr;gap:30px;align-items:center}.premium-content h2{font-size:clamp(34px,4.4vw,56px);letter-spacing:-.06em;line-height:1;margin:0}.premium-content p{color:var(--muted);line-height:1.7;font-size:16px;margin-top:16px;max-width:580px}.perks{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:24px}.perk{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.045);font-size:13px;font-weight:850;color:#dbe3f6}.perk svg{width:17px;height:17px;color:var(--solar)}.price-card{border-radius:26px;padding:24px;border:1px solid var(--line);background:rgba(255,255,255,.06);box-shadow:0 22px 70px rgba(0,0,0,.28)}.price-card .label{color:#ffd891;font-size:13px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.price{font-size:44px;letter-spacing:-.06em;font-weight:950;margin-top:6px}.price small{font-size:15px;color:var(--muted);letter-spacing:0}.price-card ul{list-style:none;display:grid;gap:10px;margin:19px 0}.price-card li{display:flex;align-items:center;gap:9px;color:#dbe3f6;font-size:14px;font-weight:800}.price-card li svg{width:16px;height:16px;color:var(--green)}.price-card .btn{width:100%;margin-top:8px}
-
-/* faq */
-.faq-grid{max-width:880px;margin:42px auto 0;display:grid;gap:12px}.faq-item{border-radius:20px;overflow:hidden}.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;border:0;background:transparent;color:var(--text);padding:19px 20px;font-size:15px;font-weight:950;cursor:pointer}.faq-q svg{width:18px;height:18px;color:var(--solar);transition:transform .18s}.faq-a{max-height:0;overflow:hidden;transition:max-height .24s ease}.faq-a p{padding:0 20px 19px;color:var(--muted);font-size:14.5px;line-height:1.65}.faq-item.open .faq-a{max-height:180px}.faq-item.open .faq-q svg{transform:rotate(45deg)}
-
-/* cta */
-.final-cta{text-align:center;border-radius:34px;padding:56px 28px;background:radial-gradient(500px 240px at 50% 0%,rgba(255,191,71,.16),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035))}.final-cta h2{font-size:clamp(34px,5vw,58px);letter-spacing:-.06em;line-height:1.03}.final-cta p{color:var(--muted);line-height:1.7;max-width:610px;margin:16px auto 0}.final-cta .hero-buttons{justify-content:center}
-
-/* footer */
+.app-shell:before{content:"";position:absolute;inset:-90px;background:conic-gradient(from 50deg,transparent,rgba(255,189,74,.18),transparent 24%,rgba(138,124,255,.16),transparent 52%,rgba(93,220,255,.12),transparent);animation:spin 18s linear infinite}@keyframes spin{to{transform:rotate(1turn)}}
+.app-frame{position:relative;z-index:1;overflow:hidden;border-radius:25px;border:1px solid rgba(255,255,255,.13);background:#070915;box-shadow:0 28px 80px rgba(0,0,0,.46)}
+.app-top{height:48px;display:flex;align-items:center;gap:9px;padding:0 15px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.035)}.win{width:11px;height:11px;border-radius:50%}.win.red{background:#ff6577}.win.yellow{background:#ffbd4a}.win.green{background:#54e3a6}.url{margin-left:6px;color:var(--muted-2);font-size:12px;font-weight:900}.app-layout{height:520px;display:grid;grid-template-columns:72px 190px minmax(0,1fr) 168px}.server-rail{background:var(--rail);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0}.server-icon{width:46px;height:46px;border-radius:17px;display:grid;place-items:center;border:1px solid var(--line);background:rgba(255,255,255,.055);font-weight:1000;color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.055)}.server-icon.home{color:#160f06;border:0;background:linear-gradient(135deg,var(--solar),var(--solar-2));box-shadow:0 16px 32px rgba(255,138,42,.25),inset 0 1px 0 rgba(255,255,255,.48)}.server-icon.active{border-color:rgba(255,189,74,.42);background:rgba(255,189,74,.12);color:#ffdc91}.server-icon.add{color:var(--green)}.rail-line{width:34px;height:1px;background:var(--line)}
+.channel-panel{background:rgba(12,16,32,.94);border-right:1px solid var(--line);padding:14px 11px;display:flex;flex-direction:column;min-width:0}.server-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 5px 13px;border-bottom:1px solid var(--line);font-size:14px;font-weight:1000}.verified{width:17px;height:17px;color:var(--solar);flex:0 0 auto}.channel-label{margin:15px 7px 7px;color:var(--muted-2);font-size:10px;letter-spacing:.12em;font-weight:1000}.channel{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:850;padding:8px 9px;border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.channel svg{width:15px;height:15px;color:var(--muted-2)}.channel.active{color:#ffdc91;background:rgba(255,189,74,.105)}.channel.active svg{color:var(--solar)}.user-card{margin-top:auto;border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:16px;padding:10px;display:flex;align-items:center;gap:9px;min-width:0}.avatar{width:34px;height:34px;border-radius:13px;display:grid;place-items:center;font-size:12px;font-weight:1000;color:#160f06;background:linear-gradient(135deg,var(--solar),var(--solar-2));flex:0 0 auto}.user-card b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-card span{display:block;color:var(--green);font-size:11px;font-weight:800;margin-top:1px}
+.chat-panel{display:flex;flex-direction:column;min-width:0;background:rgba(8,11,22,.74)}.chat-head{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 18px}.chat-title{display:flex;align-items:center;gap:9px;font-weight:1000}.chat-title svg{width:18px;height:18px;color:var(--muted-2)}.chat-actions{display:flex;align-items:center;gap:8px}.tool{width:32px;height:32px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.045);display:grid;place-items:center;color:var(--muted)}.tool svg{width:16px;height:16px}.notice{margin:16px 18px 0;border:1px solid rgba(255,189,74,.22);background:rgba(255,189,74,.08);border-radius:16px;padding:12px 14px;color:#ffdc91;font-size:13px;font-weight:850}.messages{flex:1;display:flex;flex-direction:column;gap:17px;padding:18px;overflow:hidden}.message{display:flex;gap:12px}.message-content{min-width:0}.message-line{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.message-line b{font-size:13px}.message-line time{font-size:11px;color:var(--muted-2);font-weight:850}.message p{color:rgba(248,251,255,.87);font-size:13px;line-height:1.55;margin-top:4px}.reaction{display:inline-flex;align-items:center;gap:5px;margin-top:8px;border:1px solid rgba(255,189,74,.34);background:rgba(255,189,74,.09);color:#ffdc91;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:1000}.composer{margin:0 18px 18px;min-height:48px;border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:16px;display:flex;align-items:center;gap:10px;padding:0 13px;color:var(--muted);font-size:13px;font-weight:850}.composer span{flex:1}.composer svg{width:18px;height:18px;color:var(--solar)}
+.member-panel{background:rgba(12,16,32,.88);border-left:1px solid var(--line);padding:14px 12px;min-width:0}.member-title{font-size:10px;color:var(--muted-2);font-weight:1000;letter-spacing:.12em;margin:4px 4px 10px}.member{display:flex;align-items:center;gap:9px;padding:8px;border-radius:14px;color:#cbd4e8;font-size:12px;font-weight:850}.member:hover{background:rgba(255,255,255,.05)}.member .avatar{width:30px;height:30px;border-radius:11px}.online{width:8px;height:8px;background:var(--green);border-radius:50%;box-shadow:0 0 12px rgba(84,227,166,.7);margin-left:auto}
+.floating-card{position:absolute;z-index:3;border:1px solid var(--line);background:rgba(10,14,27,.84);backdrop-filter:blur(16px);box-shadow:0 18px 50px rgba(0,0,0,.35);border-radius:18px;padding:14px;animation:float 4.8s ease-in-out infinite}.floating-card.one{right:2px;top:96px;width:176px}.floating-card.two{left:0;bottom:64px;width:192px;animation-delay:-1.8s}@keyframes float{50%{transform:translateY(-10px)}}.float-title{font-size:12px;color:var(--muted);font-weight:900;margin-bottom:8px}.float-row{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:1000}.spark{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--violet),#5c8dff);display:grid;place-items:center}.spark svg{width:18px;height:18px}.mini-bars{display:grid;gap:5px;margin-top:10px}.mini-bars span{height:7px;border-radius:999px;background:rgba(255,255,255,.09)}.mini-bars span:nth-child(1){width:92%}.mini-bars span:nth-child(2){width:68%}.mini-bars span:nth-child(3){width:80%}
+.section{position:relative;padding:80px 0}.section-head{text-align:center;max-width:720px;margin:0 auto}.eyebrow{display:inline-flex;align-items:center;gap:9px;color:#ffdc91;font-size:12px;font-weight:1000;letter-spacing:.14em;text-transform:uppercase}.eyebrow:before,.eyebrow:after{content:"";width:24px;height:1px;background:rgba(255,189,74,.36)}.section h2{font-size:clamp(32px,4.5vw,54px);letter-spacing:-.055em;line-height:1.04;font-weight:1000;margin-top:12px}.lead{color:var(--muted);font-size:17px;line-height:1.72;margin-top:14px}.grid{display:grid;gap:18px}.stats{grid-template-columns:repeat(4,1fr);margin-top:22px}.stat{border-radius:22px;padding:22px;text-align:center}.stat strong{font-size:30px;letter-spacing:-.05em}.stat span{display:block;color:var(--muted);font-size:13px;font-weight:850;margin-top:4px}.feature-grid{grid-template-columns:repeat(3,1fr);margin-top:42px}.feature-card{position:relative;overflow:hidden;min-height:236px;border-radius:var(--radius);padding:24px;transition:.18s ease}.feature-card:before{content:"";position:absolute;inset:0;background:radial-gradient(240px 110px at 18% 0%,rgba(255,189,74,.11),transparent 68%);pointer-events:none}.feature-card:hover{transform:translateY(-4px);border-color:rgba(255,189,74,.26);background:linear-gradient(180deg,rgba(255,255,255,.098),rgba(255,255,255,.043))}.icon{position:relative;width:50px;height:50px;border-radius:17px;display:grid;place-items:center;color:#160f06;background:linear-gradient(135deg,var(--solar),var(--solar-2));box-shadow:0 16px 36px rgba(255,138,42,.22),inset 0 1px 0 rgba(255,255,255,.48)}.icon svg{width:25px;height:25px}.icon.violet{color:#fff;background:linear-gradient(135deg,var(--violet),#5c8dff)}.icon.blue{color:#07121a;background:linear-gradient(135deg,var(--blue),#5f8cff)}.icon.green{color:#061710;background:linear-gradient(135deg,var(--green),#b8ff73)}.feature-card h3{position:relative;margin-top:18px;font-size:18px;letter-spacing:-.02em}.feature-card p{position:relative;color:var(--muted);font-size:14.5px;line-height:1.65;margin-top:9px}.mini-list{position:relative;display:grid;gap:8px;margin-top:16px}.mini-list span{display:flex;align-items:center;gap:8px;color:#cbd4e8;font-size:13px;font-weight:820}.mini-list svg{width:15px;height:15px;color:var(--green)}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:42px}.bento-card{border-radius:28px;padding:26px;min-height:240px}.bento-card h3{font-size:24px;letter-spacing:-.04em}.bento-card p{color:var(--muted);line-height:1.65;margin-top:10px}.badge-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.custom-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(255,255,255,.045);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;color:#dbe3f6}.custom-badge svg{width:15px;height:15px;color:var(--solar)}
+.discovery{display:grid;grid-template-columns:.92fr 1.08fr;gap:22px;align-items:stretch;margin-top:42px}.searchbox{display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:rgba(255,255,255,.055);border-radius:18px;padding:14px 16px;color:var(--muted);font-weight:850}.searchbox svg{width:19px;height:19px}.category-list{display:grid;gap:10px;margin-top:18px}.category{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:17px;padding:13px 14px;font-weight:950}.category span{display:flex;align-items:center;gap:10px}.category svg{width:19px;height:19px;color:var(--solar)}.category small{color:var(--muted);font-size:12px}.server-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.discover-card{overflow:hidden;border-radius:24px}.cover{height:82px;background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.28),transparent 55%),linear-gradient(135deg,rgba(255,189,74,.84),rgba(138,124,255,.72))}.discover-card:nth-child(2) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.25),transparent 55%),linear-gradient(135deg,rgba(84,227,166,.7),rgba(93,220,255,.72))}.discover-card:nth-child(3) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,rgba(255,91,55,.78),rgba(255,189,74,.75))}.discover-card:nth-child(4) .cover{background:radial-gradient(180px 90px at 18% 20%,rgba(255,255,255,.22),transparent 55%),linear-gradient(135deg,rgba(138,124,255,.82),rgba(255,138,42,.68))}.discover-body{padding:18px}.discover-top{display:flex;align-items:center;gap:11px;margin-top:-42px}.discover-logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;background:#0b1020;border:1px solid rgba(255,255,255,.18);font-weight:1000}.discover-title b{font-size:15px;display:flex;align-items:center;gap:5px}.discover-title svg{width:15px;height:15px;color:var(--solar)}.discover-title span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.discover-body p{color:var(--muted);font-size:13px;line-height:1.55;margin-top:13px}.join-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}.members{display:flex;align-items:center;gap:6px;color:#cbd4e8;font-size:12px;font-weight:950}.join-btn{border:1px solid rgba(255,189,74,.24);background:rgba(255,189,74,.09);color:#ffdc91;border-radius:12px;padding:8px 11px;font-size:12px;font-weight:1000}
+.premium-wrap{position:relative;border-radius:34px;padding:1px;margin-top:42px;background:linear-gradient(135deg,rgba(255,189,74,.58),rgba(138,124,255,.44),rgba(93,220,255,.34))}.premium-card{position:relative;overflow:hidden;border-radius:33px;background:linear-gradient(135deg,rgba(17,23,42,.97),rgba(7,10,20,.95));padding:38px}.premium-card:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:rgba(255,189,74,.13);filter:blur(8px);right:-130px;top:-170px}.premium-content{position:relative;display:grid;grid-template-columns:1fr .82fr;gap:30px;align-items:center}.premium-content h2{font-size:clamp(34px,4.4vw,56px);letter-spacing:-.06em;line-height:1}.premium-content p{color:var(--muted);line-height:1.7;font-size:16px;margin-top:16px}.perks{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:24px}.perk{display:flex;align-items:center;gap:10px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.045);font-size:13px;font-weight:850;color:#dbe3f6}.perk svg{width:17px;height:17px;color:var(--solar)}.price-card{border-radius:26px;padding:24px;border:1px solid var(--line);background:rgba(255,255,255,.06);box-shadow:0 22px 70px rgba(0,0,0,.28)}.price-card .label{color:#ffdc91;font-size:13px;font-weight:1000;letter-spacing:.11em;text-transform:uppercase}.price{font-size:44px;letter-spacing:-.06em;font-weight:1000;margin-top:6px}.price small{font-size:15px;color:var(--muted);letter-spacing:0}.price-card ul{list-style:none;display:grid;gap:10px;margin:19px 0}.price-card li{display:flex;align-items:center;gap:9px;color:#dbe3f6;font-size:14px;font-weight:820}.price-card li svg{width:16px;height:16px;color:var(--green)}.price-card .btn{width:100%;margin-top:8px}
+.faq-grid{max-width:900px;margin:42px auto 0;display:grid;gap:12px}.faq-item{border-radius:20px;overflow:hidden}.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;border:0;background:transparent;color:var(--text);padding:19px 20px;font-size:15px;font-weight:1000;cursor:pointer}.faq-q svg{width:18px;height:18px;color:var(--solar);transition:.18s}.faq-a{max-height:0;overflow:hidden;transition:max-height .24s ease}.faq-a p{padding:0 20px 19px;color:var(--muted);font-size:14.5px;line-height:1.65}.faq-item.open .faq-a{max-height:210px}.faq-item.open .faq-q svg{transform:rotate(45deg)}
+.final-cta{text-align:center;border-radius:34px;padding:56px 28px;background:radial-gradient(500px 240px at 50% 0%,rgba(255,189,74,.17),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.036))}.final-cta h2{font-size:clamp(34px,5vw,58px);letter-spacing:-.06em;line-height:1.03;margin-top:18px}.final-cta p{color:var(--muted);line-height:1.7;max-width:650px;margin:16px auto 0}.final-cta .hero-buttons{justify-content:center}.demo-login{display:inline-flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;color:var(--muted);font-size:14px}.demo-login b{color:var(--text)}
 .footer{border-top:1px solid var(--line);padding:34px 0 40px;color:var(--muted);font-size:13px}.footer-grid{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}.footer .brand{font-size:18px;color:var(--text)}.footer .brand-mark{width:36px;height:36px;border-radius:14px}.footer-note{max-width:640px;line-height:1.6}.footer-links{display:flex;gap:14px;flex-wrap:wrap}.footer-links a{font-weight:850;color:#cbd4e8}
-
-@media(max-width:1060px){
-  .hero-grid{grid-template-columns:1fr}.hero-copy{text-align:center}.hero-copy h1,.hero-copy p{margin-left:auto;margin-right:auto}.hero-buttons,.hero-trust{justify-content:center}.orbit-card{min-height:auto}.badge-grid{grid-template-columns:repeat(3,1fr)}.feature-grid{grid-template-columns:repeat(2,1fr)}.discovery,.premium-content{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}
-}
-@media(max-width:760px){
-  .wrap{width:min(100% - 28px,1180px)}.nav-links,.nav-actions{display:none}.menu-btn{display:grid;place-items:center}.mobile-menu.show{display:block}.hero{padding:54px 0 54px}.hero-copy h1{font-size:clamp(42px,14vw,64px)}.hero-buttons .btn{width:100%}.hero-trust{display:grid;justify-content:start;text-align:left}.orbit-card{padding:10px;border-radius:24px}.app-body{grid-template-columns:58px minmax(0,1fr);height:430px}.channel-panel{display:none}.floating-card{display:none}.chat-tools{display:none}.messages{padding:14px}.message:nth-child(4){display:none}.section{padding:62px 0}.feature-grid,.badge-grid,.server-cards,.perks{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.premium-card{padding:24px}.price{font-size:38px}.footer-grid{align-items:flex-start;flex-direction:column}.section h2,.final-cta h2{letter-spacing:-.045em}
-}
-@media(max-width:420px){.server-rail{width:54px}.app-body{grid-template-columns:54px minmax(0,1fr)}.server-icon{width:38px;height:38px;border-radius:14px}.window-url{display:none}.chat-head{padding:0 12px}.composer{margin:0 12px 12px}.message p{font-size:12.5px}.discover-body{padding:15px}.discover-top{gap:9px}.discover-logo{width:50px;height:50px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:1120px){.hero-grid{grid-template-columns:1fr}.hero-copy{text-align:center}.hero-copy p{margin-left:auto;margin-right:auto}.hero-buttons,.hero-trust{justify-content:center}.app-shell{max-width:760px;margin:0 auto}.app-layout{grid-template-columns:72px 190px minmax(0,1fr)}.member-panel{display:none}.feature-grid{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.bento,.discovery,.premium-content{grid-template-columns:1fr}}
+@media(max-width:760px){.wrap{width:min(100% - 28px,1180px)}.nav-links,.nav-actions{display:none}.menu-btn{display:grid;place-items:center}.mobile-menu.show{display:block}.hero{padding:52px 0}.hero-copy h1{font-size:clamp(42px,14vw,64px)}.hero-buttons .btn{width:100%}.hero-trust{display:grid;justify-content:start;text-align:left}.app-shell{padding:9px;border-radius:24px}.app-layout{height:440px;grid-template-columns:58px minmax(0,1fr)}.channel-panel,.floating-card,.chat-actions{display:none}.app-top{height:44px}.url{font-size:11px}.messages{padding:14px}.notice{margin:14px 14px 0}.message:nth-child(4){display:none}.composer{margin:0 14px 14px}.server-cards,.feature-grid,.perks,.stats{grid-template-columns:1fr}.section{padding:62px 0}.premium-card{padding:24px}.footer-grid{align-items:flex-start;flex-direction:column}}
+@media(max-width:420px){.server-icon{width:39px;height:39px;border-radius:14px}.app-layout{grid-template-columns:54px minmax(0,1fr)}.server-rail{padding-top:12px}.message p{font-size:12.5px}.discover-body{padding:15px}.discover-logo{width:50px;height:50px}.window-mobile-hide{display:none}.price{font-size:38px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
@@ -290,83 +200,79 @@ button{font:inherit}
 <header id="top" class="hero">
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <span class="badge-pill"><span class="pulse-dot"></span> Early access is live</span>
-      <h1>Your community,<br><span class="solar-text">brought to light.</span></h1>
-      <p>SolarCord is a fresh, premium community platform concept with servers, channels, voice rooms, roles, moderation, badges, discovery and creator tools — all wrapped in a clean solar-glass design.</p>
+      <span class="badge-pill"><span class="pulse-dot"></span> Live Render app connected</span>
+      <h1>Chat with your servers in a <span class="solar-text">solar dark UI.</span></h1>
+      <p>This version matches the app route more closely: a dashboard-style dark shell, glowing SolarCord orange accents, channel panels, member lists, cards, badges and responsive mobile scaling.</p>
       <div class="hero-buttons">
-        <a class="btn btn-primary" href="https://solarcord-web.onrender.com/app" data-app-link>Create your account <svg><use href="#i-arrow"></use></svg></a>
-        <a class="btn btn-secondary" href="#features">See features</a>
+        <a class="btn btn-primary" href="https://solarcord-web.onrender.com/app" data-app-link>Launch SolarCord <svg><use href="#i-arrow"></use></svg></a>
+        <a class="btn btn-secondary" href="#features">View features</a>
       </div>
       <div class="hero-trust" aria-label="Highlights">
-        <span><svg><use href="#i-check"></use></svg> Custom badge system</span>
-        <span><svg><use href="#i-check"></use></svg> Real app launch button</span>
-        <span><svg><use href="#i-check"></use></svg> Mobile responsive</span>
+        <span><svg><use href="#i-check"></use></svg> One HTML file</span>
+        <span><svg><use href="#i-check"></use></svg> App-style theme</span>
+        <span><svg><use href="#i-check"></use></svg> Mobile ready</span>
       </div>
     </div>
 
-    <div class="orbit-card" aria-label="SolarCord app preview">
+    <div class="app-shell" aria-label="SolarCord app themed preview">
       <div class="floating-card one glass">
-        <div class="float-title">Server badge unlocked</div>
+        <div class="float-title">Badge unlocked</div>
         <div class="float-row"><span class="spark"><svg><use href="#i-crown"></use></svg></span> Solar Partner</div>
         <div class="mini-bars"><span></span><span></span><span></span></div>
       </div>
       <div class="floating-card two glass">
-        <div class="float-title">Live voice room</div>
+        <div class="float-title">Voice room active</div>
         <div class="float-row"><span class="spark" style="background:linear-gradient(135deg,var(--green),var(--blue));color:#061710"><svg><use href="#i-mic"></use></svg></span> 18 online</div>
         <div class="mini-bars"><span></span><span></span><span></span></div>
       </div>
-
-      <div class="app-window">
-        <div class="window-top">
-          <span class="win-dot one"></span><span class="win-dot two"></span><span class="win-dot three"></span>
-          <span class="window-url">solarcord.app / Pixel Forge</span>
+      <div class="app-frame">
+        <div class="app-top">
+          <span class="win red"></span><span class="win yellow"></span><span class="win green"></span>
+          <span class="url">solarcord-web.onrender.com / app</span>
         </div>
-        <div class="app-body">
+        <div class="app-layout">
           <aside class="server-rail" aria-label="Servers">
-            <div class="server-icon home"><svg style="width:22px;height:22px"><use href="#i-sun"></use></svg></div>
-            <div style="width:30px;height:1px;background:var(--line)"></div>
-            <div class="server-icon active">PF</div>
-            <div class="server-icon">CN</div>
+            <div class="server-icon home"><svg style="width:23px;height:23px"><use href="#i-sun"></use></svg></div>
+            <div class="rail-line"></div>
+            <div class="server-icon active">SC</div>
+            <div class="server-icon">PF</div>
             <div class="server-icon">RB</div>
             <div class="server-icon add"><svg style="width:20px;height:20px"><use href="#i-plus"></use></svg></div>
           </aside>
           <aside class="channel-panel" aria-label="Channels">
-            <div class="server-name">Pixel Forge <svg class="verified-mini"><use href="#i-spark"></use></svg></div>
+            <div class="server-title">SolarCord HQ <svg class="verified"><use href="#i-spark"></use></svg></div>
             <div class="channel-label">TEXT CHANNELS</div>
             <div class="channel"><svg><use href="#i-hash"></use></svg> welcome</div>
             <div class="channel active"><svg><use href="#i-hash"></use></svg> general</div>
+            <div class="channel"><svg><use href="#i-hash"></use></svg> updates</div>
             <div class="channel"><svg><use href="#i-hash"></use></svg> showcase</div>
-            <div class="channel"><svg><use href="#i-hash"></use></svg> announcements</div>
             <div class="channel-label">VOICE ROOMS</div>
             <div class="channel"><svg><use href="#i-mic"></use></svg> Solar Lounge</div>
             <div class="channel"><svg><use href="#i-mic"></use></svg> Creator VC</div>
-            <div class="user-mini"><div class="avatar">LX</div><div><b>Loxy</b><span>Online</span></div></div>
+            <div class="user-card"><div class="avatar">LX</div><div><b>Loxy</b><span>Online</span></div></div>
           </aside>
           <main class="chat-panel">
             <div class="chat-head">
               <div class="chat-title"><svg><use href="#i-hash"></use></svg> general</div>
-              <div class="chat-tools"><span class="tool-btn"><svg><use href="#i-search"></use></svg></span><span class="tool-btn"><svg><use href="#i-shield"></use></svg></span></div>
+              <div class="chat-actions"><span class="tool"><svg><use href="#i-search"></use></svg></span><span class="tool"><svg><use href="#i-shield"></use></svg></span></div>
             </div>
+            <div class="notice">☀ SolarCord is online. Create servers, channels, badges and roles from one clean dashboard.</div>
             <div class="messages">
-              <div class="message">
-                <div class="avatar" style="background:linear-gradient(135deg,var(--violet),#5c8dff);color:#fff">NV</div>
-                <div class="message-content"><div class="message-line"><b>Nova</b><time>Today at 14:02</time></div><p>Welcome to Pixel Forge. Drop your builds in showcase and grab roles from onboarding.</p><span class="reaction">☀ 12</span></div>
-              </div>
-              <div class="message">
-                <div class="avatar" style="background:linear-gradient(135deg,var(--green),var(--blue));color:#061710">KA</div>
-                <div class="message-content"><div class="message-line"><b>Kai</b><time>Today at 14:05</time></div><p>The new server badge icons look so much cleaner than emojis.</p></div>
-              </div>
-              <div class="message">
-                <div class="avatar">ME</div>
-                <div class="message-content"><div class="message-line"><b>Meadow</b><time>Today at 14:07</time></div><p>Discovery feels smooth now. Partnered servers stand out instantly.</p><span class="reaction">🔥 8</span></div>
-              </div>
-              <div class="message">
-                <div class="avatar" style="background:linear-gradient(135deg,var(--danger),var(--solar-3));color:#fff">AU</div>
-                <div class="message-content"><div class="message-line"><b>AutoMod</b><time>Today at 14:10</time></div><p>Safety scan complete. No flagged messages in the last hour.</p></div>
-              </div>
+              <div class="message"><div class="avatar" style="background:linear-gradient(135deg,var(--violet),#5c8dff);color:#fff">NV</div><div class="message-content"><div class="message-line"><b>Nova</b><time>Today at 14:02</time></div><p>Welcome to SolarCord HQ. The new glass panels match the live app style much better.</p><span class="reaction">☀ 18</span></div></div>
+              <div class="message"><div class="avatar" style="background:linear-gradient(135deg,var(--green),var(--blue));color:#061710">KA</div><div class="message-content"><div class="message-line"><b>Kai</b><time>Today at 14:05</time></div><p>Server discovery, badges and premium cards now feel like part of the actual product.</p></div></div>
+              <div class="message"><div class="avatar">ME</div><div class="message-content"><div class="message-line"><b>Meadow</b><time>Today at 14:07</time></div><p>The orange Solar accent pops without making the whole page too bright.</p><span class="reaction">🔥 9</span></div></div>
+              <div class="message"><div class="avatar" style="background:linear-gradient(135deg,var(--danger),var(--solar-3));color:#fff">AU</div><div class="message-content"><div class="message-line"><b>AutoMod</b><time>Today at 14:10</time></div><p>Safety scan complete. No flagged messages in the last hour.</p></div></div>
             </div>
             <div class="composer"><span>Message #general</span><svg><use href="#i-arrow"></use></svg></div>
           </main>
+          <aside class="member-panel" aria-label="Members">
+            <div class="member-title">ONLINE — 5</div>
+            <div class="member"><span class="avatar">LX</span> Loxy <span class="online"></span></div>
+            <div class="member"><span class="avatar" style="background:linear-gradient(135deg,var(--violet),#5c8dff);color:#fff">NV</span> Nova <span class="online"></span></div>
+            <div class="member"><span class="avatar" style="background:linear-gradient(135deg,var(--green),var(--blue));color:#061710">KA</span> Kai <span class="online"></span></div>
+            <div class="member"><span class="avatar">ME</span> Meadow <span class="online"></span></div>
+            <div class="member"><span class="avatar" style="background:linear-gradient(135deg,var(--danger),var(--solar-3));color:#fff">AU</span> AutoMod <span class="online"></span></div>
+          </aside>
         </div>
       </div>
     </div>
@@ -376,9 +282,9 @@ button{font:inherit}
 <section class="section" aria-label="SolarCord stats">
   <div class="wrap">
     <div class="grid stats">
-      <div class="stat glass"><strong>120+</strong><span>server settings</span></div>
+      <div class="stat glass"><strong>120+</strong><span>server controls</span></div>
       <div class="stat glass"><strong>24/7</strong><span>community safety</span></div>
-      <div class="stat glass"><strong>12</strong><span>custom badges</span></div>
+      <div class="stat glass"><strong>12</strong><span>badge concepts</span></div>
       <div class="stat glass"><strong>1</strong><span>clean HTML file</span></div>
     </div>
   </div>
@@ -388,16 +294,16 @@ button{font:inherit}
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Features</span>
-      <h2>Everything a modern community needs.</h2>
-      <p class="lead">A polished feature showcase for SolarCord, built to feel complete without needing separate CSS, images, or JavaScript files.</p>
+      <h2>Built around the app experience.</h2>
+      <p class="lead">The page now uses the same idea as the SolarCord app: dark panels, server rails, channels, online states, glowing accents and clean dashboard cards.</p>
     </div>
     <div class="grid feature-grid">
-      <article class="feature-card glass"><div class="icon"><svg><use href="#i-hash"></use></svg></div><h3>Servers & channels</h3><p>Organise communities with text channels, voice rooms, announcements, forums, categories and server onboarding.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Channel permissions</span><span><svg><use href="#i-check"></use></svg> Public or private spaces</span></div></article>
-      <article class="feature-card glass"><div class="icon violet"><svg><use href="#i-roles"></use></svg></div><h3>Roles & permissions</h3><p>Create clean role stacks with colours, icons, hierarchy, member groups, mod teams and per-channel overrides.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Role icons</span><span><svg><use href="#i-check"></use></svg> Granular controls</span></div></article>
-      <article class="feature-card glass"><div class="icon blue"><svg><use href="#i-mic"></use></svg></div><h3>Voice & streaming</h3><p>Launch low-latency voice rooms, stage events, screen sharing and creator hangouts from the same server home.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Voice states</span><span><svg><use href="#i-check"></use></svg> HD streaming perks</span></div></article>
-      <article class="feature-card glass"><div class="icon green"><svg><use href="#i-shield"></use></svg></div><h3>Moderation tools</h3><p>Keep servers safe with warnings, timeouts, kicks, bans, audit logs, reports and simple AutoMod filters.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Audit logs</span><span><svg><use href="#i-check"></use></svg> AutoMod rules</span></div></article>
-      <article class="feature-card glass"><div class="icon red"><svg><use href="#i-bot"></use></svg></div><h3>Bots & webhooks</h3><p>Developer-ready bot tokens, incoming webhooks, command permissions and clean integrations for creators.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Bot dashboard</span><span><svg><use href="#i-check"></use></svg> Webhook posts</span></div></article>
-      <article class="feature-card glass"><div class="icon"><svg><use href="#i-spark"></use></svg></div><h3>Profiles & rewards</h3><p>Give users animated profiles, banners, badges, achievements, boosts, cosmetics and a premium Solar+ identity.</p><div class="feature-list"><span><svg><use href="#i-check"></use></svg> Profile themes</span><span><svg><use href="#i-check"></use></svg> Evolving badges</span></div></article>
+      <article class="feature-card glass"><div class="icon"><svg><use href="#i-hash"></use></svg></div><h3>Servers & channels</h3><p>Organise communities with text channels, voice rooms, announcements, private spaces and onboarding.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Channel permissions</span><span><svg><use href="#i-check"></use></svg> Categories and roles</span></div></article>
+      <article class="feature-card glass"><div class="icon violet"><svg><use href="#i-roles"></use></svg></div><h3>Roles & profiles</h3><p>Create role stacks, profile themes, badges, avatar cosmetics and server identity tools.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Role icons</span><span><svg><use href="#i-check"></use></svg> Profile banners</span></div></article>
+      <article class="feature-card glass"><div class="icon blue"><svg><use href="#i-mic"></use></svg></div><h3>Voice & live rooms</h3><p>Showcase voice rooms, stage events, creator hangouts, screen sharing and stream perks.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Voice states</span><span><svg><use href="#i-check"></use></svg> HD streaming</span></div></article>
+      <article class="feature-card glass"><div class="icon green"><svg><use href="#i-shield"></use></svg></div><h3>Moderation tools</h3><p>Keep servers clean with warnings, reports, timeouts, bans, audit logs and AutoMod filters.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Audit logs</span><span><svg><use href="#i-check"></use></svg> Safety rules</span></div></article>
+      <article class="feature-card glass"><div class="icon"><svg><use href="#i-spark"></use></svg></div><h3>Server badges</h3><p>Give verified, partnered, safe and boosted servers a clear badge system that stands out.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Verified servers</span><span><svg><use href="#i-check"></use></svg> Partnered servers</span></div></article>
+      <article class="feature-card glass"><div class="icon violet"><svg><use href="#i-bot"></use></svg></div><h3>Bots & webhooks</h3><p>Make the product feel developer-ready with bot dashboards, webhooks and command permissions.</p><div class="mini-list"><span><svg><use href="#i-check"></use></svg> Bot tokens</span><span><svg><use href="#i-check"></use></svg> Webhook posts</span></div></article>
     </div>
   </div>
 </section>
@@ -405,35 +311,30 @@ button{font:inherit}
 <section class="section" id="badges">
   <div class="wrap">
     <div class="section-head">
-      <span class="eyebrow">Custom badges</span>
-      <h2>Original badge icons, not emojis.</h2>
-      <p class="lead">Each badge below is an inline SVG design built into this single HTML file, so it works anywhere without image uploads.</p>
+      <span class="eyebrow">Badges</span>
+      <h2>Clean identity for users and servers.</h2>
+      <p class="lead">Badges are shown as app-style pills and small icons, so the page feels closer to the real product instead of a normal marketing template.</p>
     </div>
-    <div class="grid badge-grid">
-      <article class="solar-badge glass">
-        <div class="badge-icon" aria-hidden="true">
-          <svg viewBox="0 0 92 92" fill="none"><path d="M46 5 58.4 18.2 76 16l2.4 17.7L88 46 78.4 58.3 76 76l-17.6-2.2L46 87 33.6 73.8 16 76l-2.4-17.7L4 46l9.6-12.3L16 16l17.6 2.2L46 5Z" fill="url(#b1)"/><path d="m34 46 8 8 17-19" stroke="#1b1206" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="b1" x1="12" y1="10" x2="80" y2="84"><stop stop-color="#FFE08B"/><stop offset="1" stop-color="#FF8F28"/></linearGradient></defs></svg>
-        </div><h3>Verified</h3><p>For official brands, creators, teams and organisations.</p><span class="badge-tag"><svg><use href="#i-spark"></use></svg> Trust badge</span>
+    <div class="bento">
+      <article class="bento-card glass">
+        <h3>Server badges</h3>
+        <p>Use badges for trust, safety, partnership and boosted communities.</p>
+        <div class="badge-row">
+          <span class="custom-badge"><svg><use href="#i-spark"></use></svg> Verified</span>
+          <span class="custom-badge"><svg><use href="#i-crown"></use></svg> Solar Partner</span>
+          <span class="custom-badge"><svg><use href="#i-shield"></use></svg> Safe Server</span>
+          <span class="custom-badge"><svg><use href="#i-rocket"></use></svg> Boosted</span>
+        </div>
       </article>
-      <article class="solar-badge glass">
-        <div class="badge-icon" aria-hidden="true">
-          <svg viewBox="0 0 92 92" fill="none"><path d="M46 7 80 24v24c0 20-14 31-34 38C26 79 12 68 12 48V24L46 7Z" fill="url(#b2)"/><path d="M30 48c8-19 24-19 32 0M35 40h22M29 55h34" stroke="white" stroke-width="6" stroke-linecap="round"/><path d="M46 23v46" stroke="white" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/><defs><linearGradient id="b2" x1="15" y1="9" x2="77" y2="84"><stop stop-color="#8B7CFF"/><stop offset="1" stop-color="#5AD7FF"/></linearGradient></defs></svg>
-        </div><h3>Solar Partner</h3><p>For active, high-quality communities with strong standards.</p><span class="badge-tag"><svg><use href="#i-crown"></use></svg> Partnered</span>
-      </article>
-      <article class="solar-badge glass">
-        <div class="badge-icon" aria-hidden="true">
-          <svg viewBox="0 0 92 92" fill="none"><circle cx="46" cy="46" r="39" fill="url(#b3)"/><path d="M12 46h68M46 8c11 10 16 22 16 38s-5 28-16 38M46 8C35 18 30 30 30 46s5 28 16 38" stroke="#061710" stroke-width="5" stroke-linecap="round"/><defs><linearGradient id="b3" x1="12" y1="11" x2="78" y2="82"><stop stop-color="#B8FF73"/><stop offset="1" stop-color="#50E0A4"/></linearGradient></defs></svg>
-        </div><h3>Community</h3><p>For public servers with onboarding, rules and discovery enabled.</p><span class="badge-tag"><svg><use href="#i-globe"></use></svg> Public</span>
-      </article>
-      <article class="solar-badge glass">
-        <div class="badge-icon" aria-hidden="true">
-          <svg viewBox="0 0 92 92" fill="none"><path d="M49 6 20 52h22L35 86l37-50H50l-1-30Z" fill="url(#b4)"/><path d="M49 6 20 52h22L35 86l37-50H50l-1-30Z" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linejoin="round"/><defs><linearGradient id="b4" x1="22" y1="8" x2="72" y2="84"><stop stop-color="#FFE08B"/><stop offset=".55" stop-color="#FF8F28"/><stop offset="1" stop-color="#FF5F46"/></linearGradient></defs></svg>
-        </div><h3>Boosted</h3><p>For servers powered up by members with premium boosts.</p><span class="badge-tag"><svg><use href="#i-rocket"></use></svg> Boosted</span>
-      </article>
-      <article class="solar-badge glass">
-        <div class="badge-icon" aria-hidden="true">
-          <svg viewBox="0 0 92 92" fill="none"><path d="M46 7 78 20v24c0 21-12.8 34.6-32 41C26.8 78.6 14 65 14 44V20L46 7Z" fill="url(#b5)"/><path d="M32 46.5 42 56l20-23" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="b5" x1="14" y1="10" x2="80" y2="82"><stop stop-color="#5AD7FF"/><stop offset="1" stop-color="#5F8CFF"/></linearGradient></defs></svg>
-        </div><h3>Safe Server</h3><p>For communities that meet SolarCord safety and moderation rules.</p><span class="badge-tag"><svg><use href="#i-shield"></use></svg> Protected</span>
+      <article class="bento-card glass">
+        <h3>User rewards</h3>
+        <p>Profiles can show early adopter, staff, bug hunter, developer and Solar+ badges.</p>
+        <div class="badge-row">
+          <span class="custom-badge"><svg><use href="#i-sun"></use></svg> Early Access</span>
+          <span class="custom-badge"><svg><use href="#i-bot"></use></svg> Developer</span>
+          <span class="custom-badge"><svg><use href="#i-heart"></use></svg> Supporter</span>
+          <span class="custom-badge"><svg><use href="#i-crown"></use></svg> Solar+</span>
+        </div>
       </article>
     </div>
   </div>
@@ -444,10 +345,10 @@ button{font:inherit}
     <div class="section-head">
       <span class="eyebrow">Discovery</span>
       <h2>Find servers that feel alive.</h2>
-      <p class="lead">A cleaner discovery area with categories, member counts, badges and cards for promoted communities.</p>
+      <p class="lead">Discovery cards now use stronger app-card styling, live online dots and SolarCord badge marks.</p>
     </div>
     <div class="discovery">
-      <aside class="discovery-panel glass">
+      <aside class="glass" style="border-radius:28px;padding:28px">
         <div class="searchbox"><svg><use href="#i-search"></use></svg> Search communities, creators, games...</div>
         <div class="category-list">
           <div class="category"><span><svg><use href="#i-rocket"></use></svg> Gaming</span><small>2.4k servers</small></div>
@@ -457,10 +358,10 @@ button{font:inherit}
         </div>
       </aside>
       <div class="server-cards">
-        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">PF</div><div class="discover-title"><b>Pixel Forge <svg><use href="#i-spark"></use></svg></b><span>Design & Minecraft</span></div></div><p>Share builds, UI packs, skins and game projects with other creators.</p><div class="join-row"><span class="members"><span class="online-dot"></span> 18.2k online</span><button class="join-btn">Join</button></div></div></article>
-        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">SC</div><div class="discover-title"><b>Solar Coders <svg><use href="#i-shield"></use></svg></b><span>Programming</span></div></div><p>Build websites, Roblox systems, bots and tools with a friendly dev community.</p><div class="join-row"><span class="members"><span class="online-dot"></span> 9.7k online</span><button class="join-btn">Join</button></div></div></article>
-        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">RB</div><div class="discover-title"><b>Roblox Hub <svg><use href="#i-crown"></use></svg></b><span>Games</span></div></div><p>Find scripters, testers, builders and artists for your next Roblox launch.</p><div class="join-row"><span class="members"><span class="online-dot"></span> 31.4k online</span><button class="join-btn">Join</button></div></div></article>
-        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">AM</div><div class="discover-title"><b>Anime Moon <svg><use href="#i-globe"></use></svg></b><span>Anime & Chill</span></div></div><p>Talk shows, characters, edits, music, recommendations and watch parties.</p><div class="join-row"><span class="members"><span class="online-dot"></span> 12.1k online</span><button class="join-btn">Join</button></div></div></article>
+        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">PF</div><div class="discover-title"><b>Pixel Forge <svg><use href="#i-spark"></use></svg></b><span>Design & Minecraft</span></div></div><p>Share builds, UI packs, skins and game projects with other creators.</p><div class="join-row"><span class="members"><span class="online"></span> 18.2k online</span><button class="join-btn">Join</button></div></div></article>
+        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">SC</div><div class="discover-title"><b>Solar Coders <svg><use href="#i-shield"></use></svg></b><span>Programming</span></div></div><p>Build websites, Roblox systems, bots and tools with a friendly dev community.</p><div class="join-row"><span class="members"><span class="online"></span> 9.7k online</span><button class="join-btn">Join</button></div></div></article>
+        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">RB</div><div class="discover-title"><b>Roblox Hub <svg><use href="#i-crown"></use></svg></b><span>Games</span></div></div><p>Find scripters, testers, builders and artists for your next Roblox launch.</p><div class="join-row"><span class="members"><span class="online"></span> 31.4k online</span><button class="join-btn">Join</button></div></div></article>
+        <article class="discover-card glass"><div class="cover"></div><div class="discover-body"><div class="discover-top"><div class="discover-logo">AM</div><div class="discover-title"><b>Anime Moon <svg><use href="#i-globe"></use></svg></b><span>Anime & Chill</span></div></div><p>Talk shows, characters, edits, music, recommendations and watch parties.</p><div class="join-row"><span class="members"><span class="online"></span> 12.1k online</span><button class="join-btn">Join</button></div></div></article>
       </div>
     </div>
   </div>
@@ -471,7 +372,7 @@ button{font:inherit}
     <div class="section-head">
       <span class="eyebrow">Premium</span>
       <h2>Meet <span class="solar-text">Solar+</span>.</h2>
-      <p class="lead">Premium features for users and server boosts for communities, presented in a clean pricing card.</p>
+      <p class="lead">A premium card that matches the dashboard theme and sends users straight into your app.</p>
     </div>
     <div class="premium-wrap">
       <div class="premium-card">
@@ -510,13 +411,13 @@ button{font:inherit}
     <div class="section-head">
       <span class="eyebrow">FAQ</span>
       <h2>Quick answers.</h2>
-      <p class="lead">These can be changed easily inside the same file.</p>
+      <p class="lead">The useful setup notes are still included, just in the updated theme.</p>
     </div>
     <div class="faq-grid">
-      <div class="faq-item glass open"><button class="faq-q">Is this all in one file?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>Yes. The page includes the HTML, CSS, JavaScript, app mockup and custom SVG icons inside one file. Rename it to index.html and upload it.</p></div></div>
-      <div class="faq-item glass"><button class="faq-q">Do I need an assets folder?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>No. This version does not need external images, icon packs or CSS files. Everything is built inline so it is easy to paste into GitHub.</p></div></div>
-      <div class="faq-item glass"><button class="faq-q">Can I change the colours?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>Yes. At the top of the CSS, edit the variables like --solar, --violet, --blue and --bg to quickly reskin the whole page.</p></div></div>
-      <div class="faq-item glass"><button class="faq-q">Is this a real backend app?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>This index is the clean landing page. The real SolarCord app runs on Render at <b>solarcord-web.onrender.com/app</b>, and the backend API runs at <b>solarcord-api.onrender.com</b>. Set <b>NEXT_PUBLIC_API_URL</b> and <b>WEB_ORIGIN</b> in Render so login, servers and chat connect correctly.</p></div></div>
+      <div class="faq-item glass open"><button class="faq-q">Is this still one file?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>Yes. The page includes the HTML, CSS, JavaScript, app mockup and SVG icons inside one file. Rename it to index.html and upload it.</p></div></div>
+      <div class="faq-item glass"><button class="faq-q">What changed in this update?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>The theme is more like a real SolarCord app shell: darker panels, server rail, channel sidebar, chat layout, member list, online dots and stronger Solar accent lighting.</p></div></div>
+      <div class="faq-item glass"><button class="faq-q">Can I change the colours?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>Yes. Edit the CSS variables at the top of the file, especially --solar, --solar-2, --bg, --sidebar and --panel.</p></div></div>
+      <div class="faq-item glass"><button class="faq-q">Does it open the live app?<svg><use href="#i-plus"></use></svg></button><div class="faq-a"><p>Yes. All app buttons point to <b>https://solarcord-web.onrender.com/app</b>. Keep your Render web service variable <b>NEXT_PUBLIC_API_URL</b> and API variable <b>WEB_ORIGIN</b> set correctly so login and chat connect.</p></div></div>
     </div>
   </div>
 </section>
@@ -525,13 +426,13 @@ button{font:inherit}
   <div class="wrap">
     <div class="final-cta glass">
       <span class="badge-pill"><span class="pulse-dot"></span> Connected to your Render app</span>
-      <h2 style="margin-top:18px">Open the real SolarCord app.</h2>
-      <p>This index page now points to your live app route. Make sure Render has <b>NEXT_PUBLIC_API_URL</b> on the web service and <b>WEB_ORIGIN</b> on the API service, with no trailing slashes.</p>
+      <h2>Open the real SolarCord app.</h2>
+      <p>This landing page uses the same SolarCord app route for every launch button. Upload this as your new index page and it will send users into the live app.</p>
       <div class="hero-buttons">
         <a class="btn btn-primary" href="https://solarcord-web.onrender.com/app" data-app-link>Open SolarCord <svg><use href="#i-arrow"></use></svg></a>
         <a class="btn btn-secondary" href="https://solarcord-api.onrender.com" target="_blank" rel="noopener">Check API</a>
       </div>
-      <p style="margin-top:18px;color:var(--muted);font-size:14px">Demo login: <b>nova@solarcord.dev</b> / <b>password123</b></p>
+      <p class="demo-login"><span>Demo login:</span> <b>nova@solarcord.dev</b> <span>/</span> <b>password123</b></p>
     </div>
   </div>
 </section>
@@ -539,7 +440,7 @@ button{font:inherit}
 <footer class="footer">
   <div class="wrap footer-grid">
     <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-sun"></use></svg></span><span>SolarCord</span></a>
-    <p class="footer-note">SolarCord landing page with custom styling and inline SVG icons. Use the Open app button to launch the real Render app.</p>
+    <p class="footer-note">SolarCord app-themed one-file landing page. It uses custom inline styling and points users to your live Render app.</p>
     <div class="footer-links"><a href="#features">Features</a><a href="#badges">Badges</a><a href="#solarplus">Solar+</a></div>
   </div>
 </footer>
@@ -550,14 +451,16 @@ const API_URL = 'https://solarcord-api.onrender.com';
 document.querySelectorAll('[data-app-link]').forEach(link => { link.href = APP_URL; });
 const menuBtn = document.getElementById('menuBtn');
 const mobileMenu = document.getElementById('mobileMenu');
-menuBtn.addEventListener('click', () => {
-  const open = mobileMenu.classList.toggle('show');
-  menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-});
-mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  mobileMenu.classList.remove('show');
-  menuBtn.setAttribute('aria-expanded', 'false');
-}));
+if(menuBtn && mobileMenu){
+  menuBtn.addEventListener('click', () => {
+    const open = mobileMenu.classList.toggle('show');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  mobileMenu.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
+    mobileMenu.classList.remove('show');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }));
+}
 document.querySelectorAll('.faq-q').forEach(button => {
   button.addEventListener('click', () => {
     const item = button.closest('.faq-item');
