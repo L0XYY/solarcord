@@ -8,6 +8,7 @@ import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import { ServerTag } from "./ServerTag";
 import { VoiceBar } from "./VoiceBar";
+import { VoiceAvatar } from "./VoiceAvatar";
 import { useVoice, joinVoice } from "@/lib/voice";
 import { boostLevelFor, BOOST_TIERS } from "@solarcord/shared";
 import type { Channel, ServerDetail } from "@/lib/types";
@@ -206,12 +207,14 @@ export function ChannelSidebar({
                 <div className="ml-6 mt-0.5 space-y-0.5">
                   {user && (
                     <div className="flex items-center gap-2 rounded px-2 py-1 text-xs text-ink">
-                      <Avatar name={displayName(user)} src={user.avatarUrl} size={20} /> {displayName(user)}
+                      <VoiceAvatar name={displayName(user)} src={user.avatarUrl} size={22} speaking={voice.selfSpeaking} muted={voice.muted} deafened={voice.deafened} />
+                      {displayName(user)}
                     </div>
                   )}
                   {voiceMembers.map((m) => (
                     <div key={m.socketId} className="flex items-center gap-2 rounded px-2 py-1 text-xs text-muted">
-                      <Avatar name={m.displayName ?? m.username} src={m.avatarUrl} size={20} /> {m.displayName ?? m.username}
+                      <VoiceAvatar name={m.displayName ?? m.username} src={m.avatarUrl} size={22} speaking={m.speaking} muted={m.muted} deafened={m.deafened} />
+                      {m.displayName ?? m.username}
                     </div>
                   ))}
                 </div>

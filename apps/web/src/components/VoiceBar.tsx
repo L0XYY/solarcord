@@ -3,8 +3,8 @@ import clsx from "clsx";
 import { useVoice, toggleMute, toggleDeafen, leaveVoice } from "@/lib/voice";
 import { useAuth } from "@/lib/store";
 import { displayName } from "@/lib/ui";
-import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { VoiceAvatar } from "./VoiceAvatar";
 
 export function VoiceBar() {
   const v = useVoice();
@@ -30,10 +30,19 @@ export function VoiceBar() {
         </button>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1.5 px-1">
-        {user && <Dot name={displayName(user)} src={user.avatarUrl} muted={v.muted} />}
+      <div className="mt-2 flex flex-wrap gap-2 px-1">
+        {user && (
+          <VoiceAvatar name={displayName(user)} src={user.avatarUrl} muted={v.muted} deafened={v.deafened} speaking={v.selfSpeaking} />
+        )}
         {members.map((m) => (
-          <Dot key={m.socketId} name={m.displayName ?? m.username} src={m.avatarUrl} muted={m.muted} />
+          <VoiceAvatar
+            key={m.socketId}
+            name={m.displayName ?? m.username}
+            src={m.avatarUrl}
+            muted={m.muted}
+            deafened={m.deafened}
+            speaking={m.speaking}
+          />
         ))}
       </div>
 
@@ -61,15 +70,3 @@ export function VoiceBar() {
   );
 }
 
-function Dot({ name, src, muted }: { name: string; src?: string | null; muted: boolean }) {
-  return (
-    <div className="relative" title={name}>
-      <Avatar name={name} src={src} size={28} />
-      {muted && (
-        <span className="absolute -bottom-0.5 -right-0.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-solar-ember text-night-900">
-          <Icon name="mic" size={9} />
-        </span>
-      )}
-    </div>
-  );
-}

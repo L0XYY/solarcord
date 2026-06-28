@@ -175,8 +175,8 @@ export function createGateway(httpServer: HttpServer): AppIO {
       io.to(to).emit("voice:signal", { from: socket.id, signal });
     });
 
-    socket.on("voice:state", ({ roomId, muted }) => {
-      socket.to(room.voice(roomId)).emit("voice:state", { roomId, userId: uid, muted });
+    socket.on("voice:state", ({ roomId, muted, deafened }) => {
+      socket.to(room.voice(roomId)).emit("voice:state", { roomId, userId: uid, muted, deafened });
     });
 
     // Ring the other participants of a DM conversation.

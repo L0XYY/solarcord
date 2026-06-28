@@ -64,7 +64,7 @@ export interface ServerToClientEvents {
   "voice:peer-joined": (data: { roomId: string; peer: VoicePeer }) => void;
   "voice:peer-left": (data: { roomId: string; socketId: string }) => void;
   "voice:signal": (data: { from: string; signal: unknown }) => void;
-  "voice:state": (data: { roomId: string; userId: string; muted: boolean }) => void;
+  "voice:state": (data: { roomId: string; userId: string; muted: boolean; deafened: boolean }) => void;
   "voice:incoming": (data: { conversationId: string; from: VoicePeer }) => void;
   error: (data: { code: string; message: string }) => void;
 }
@@ -83,7 +83,7 @@ export interface ClientToServerEvents {
   "voice:join": (data: { roomId: string }) => void;
   "voice:leave": (data: { roomId: string }) => void;
   "voice:signal": (data: { to: string; signal: unknown }) => void;
-  "voice:state": (data: { roomId: string; muted: boolean }) => void;
+  "voice:state": (data: { roomId: string; muted: boolean; deafened: boolean }) => void;
   "voice:call": (data: { conversationId: string }) => void;
 }
 
