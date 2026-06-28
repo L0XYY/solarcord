@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/store";
 import { initials, displayName } from "@/lib/ui";
 import { BadgeChip } from "@/components/BadgeChip";
 import { ImageUpload } from "@/components/ImageUpload";
+import { Logo } from "@/components/Logo";
 import { SERVER_BADGE_INFO, type ServerBadgeType } from "@solarcord/shared";
 
 type Tab = "overview" | "users" | "servers" | "badges" | "reports";
@@ -56,9 +57,7 @@ export default function AdminPage() {
     <main className="flex min-h-screen">
       <aside className="w-60 shrink-0 border-r border-line/5 bg-night-900/50 p-4">
         <div className="flex items-center gap-2 px-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-solar to-solar-glow text-night-900">
-            <span className="font-black">S</span>
-          </div>
+          <Logo size={36} />
           <div>
             <p className="text-sm font-bold leading-tight">SolarCord</p>
             <p className="text-[11px] text-muted">Admin Console</p>

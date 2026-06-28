@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { bootstrapSession } from "@/lib/api";
+import { Logo } from "@/components/Logo";
 
 export default function Landing() {
   const router = useRouter();
@@ -25,7 +26,8 @@ export default function Landing() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      <div className="mx-auto flex max-w-5xl flex-col items-center px-6 pt-28 text-center">
+      <div className="mx-auto flex max-w-5xl flex-col items-center px-6 pt-24 text-center">
+        <Logo size={72} className="mb-6 shadow-glass" />
         <div className="mb-6 inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-xs font-medium text-muted">
           <span className="h-2 w-2 rounded-full bg-solar shadow-glow" /> Now in early access
         </div>

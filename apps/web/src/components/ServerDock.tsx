@@ -2,6 +2,7 @@
 import clsx from "clsx";
 import { initials } from "@/lib/ui";
 import { Icon } from "./Icon";
+import { Logo } from "./Logo";
 import type { ServerSummary } from "@/lib/types";
 
 export function ServerDock({
@@ -34,12 +35,11 @@ export function ServerDock({
         />
         <span
           className={clsx(
-            "grid h-12 w-12 place-items-center rounded-2xl text-night-900 shadow-glow transition-all",
-            homeActive ? "rounded-xl ring-2 ring-solar/50" : "hover:rounded-xl",
-            "bg-gradient-to-br from-solar to-solar-glow",
+            "grid h-12 w-12 place-items-center overflow-hidden rounded-2xl transition-all",
+            homeActive ? "rounded-xl ring-2 ring-solar/60" : "hover:rounded-xl",
           )}
         >
-          <span className="text-lg font-black">S</span>
+          <Logo size={48} />
         </span>
       </button>
       <div className="my-1 h-px w-8 bg-line/10" />

@@ -1,3 +1,5 @@
+import { Logo } from "./Logo";
+
 export function AuthShell({
   title,
   subtitle,
@@ -16,9 +18,7 @@ export function AuthShell({
       />
       <div className="relative w-full max-w-[400px] animate-fade-up">
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-solar text-2xl font-black text-night-900 shadow-glass">
-            S
-          </div>
+          <Logo size={56} className="mb-4 shadow-glass" />
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           <p className="mt-1.5 text-sm text-muted">{subtitle}</p>
         </div>
