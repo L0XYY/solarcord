@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { statusColor, statusLabel, colorToHex } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { BadgeIcon } from "./BadgeIcon";
+import { ServerTag } from "./ServerTag";
 
 export interface ProfileRole {
   id: string;
@@ -26,6 +27,8 @@ export interface ProfileViewData {
   isStaff?: boolean;
   themePrimary?: string | null;
   themeAccent?: string | null;
+  tag?: string | null;
+  tagBadge?: string | null;
   badges?: { key: string; name: string; iconUrl: string | null }[];
 }
 
@@ -95,6 +98,7 @@ export function ProfileCardView({ data, roles }: { data: ProfileViewData; roles?
           <h2 className="text-lg font-bold" style={accent ? { color: accent } : undefined}>
             {name}
           </h2>
+          {data.tag && <ServerTag tag={data.tag} badge={data.tagBadge} />}
           {data.isBot && <span className="rounded bg-aurora/20 px-1.5 text-[10px] font-bold uppercase text-aurora">Bot</span>}
         </div>
         <p className="text-sm" style={{ color: muted }}>

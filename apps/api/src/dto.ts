@@ -8,6 +8,8 @@ export function toPublicUser(u: {
   displayName: string | null;
   avatarUrl: string | null;
   status: string;
+  tag?: string | null;
+  tagBadge?: string | null;
 }): PublicUser {
   return {
     id: u.id,
@@ -15,6 +17,8 @@ export function toPublicUser(u: {
     displayName: u.displayName,
     avatarUrl: u.avatarUrl,
     status: u.status as PublicUser["status"],
+    tag: u.tag ?? null,
+    tagBadge: u.tagBadge ?? null,
   };
 }
 
@@ -94,6 +98,8 @@ export function toSelfUser(u: {
   customStatus: string | null;
   themePrimary: string | null;
   themeAccent: string | null;
+  tag: string | null;
+  tagBadge: string | null;
   isStaff: boolean;
 }) {
   return {
@@ -109,6 +115,8 @@ export function toSelfUser(u: {
     customStatus: u.customStatus,
     themePrimary: u.themePrimary,
     themeAccent: u.themeAccent,
+    tag: u.tag,
+    tagBadge: u.tagBadge,
     isStaff: u.isStaff,
   };
 }

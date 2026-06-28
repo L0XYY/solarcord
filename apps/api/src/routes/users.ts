@@ -25,6 +25,8 @@ export async function userRoutes(app: FastifyInstance) {
         status: body.status,
         themePrimary: body.themePrimary,
         themeAccent: body.themeAccent,
+        tag: body.tag,
+        tagBadge: body.tagBadge,
       },
     });
 
@@ -60,6 +62,8 @@ export async function userRoutes(app: FastifyInstance) {
         status: user.status === "INVISIBLE" ? "OFFLINE" : user.status,
         themePrimary: user.themePrimary,
         themeAccent: user.themeAccent,
+        tag: user.tag,
+        tagBadge: user.tagBadge,
         isBot: user.isBot,
         isStaff: user.isStaff,
         badges: user.badges.map((b) => ({ key: b.badge.key, name: b.badge.name, iconUrl: b.badge.iconUrl })),

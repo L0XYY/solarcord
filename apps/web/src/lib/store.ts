@@ -14,6 +14,8 @@ export interface SelfUser {
   customStatus: string | null;
   themePrimary: string | null;
   themeAccent: string | null;
+  tag: string | null;
+  tagBadge: string | null;
   isStaff: boolean;
 }
 

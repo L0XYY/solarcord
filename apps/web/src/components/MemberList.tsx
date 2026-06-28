@@ -2,6 +2,7 @@
 import clsx from "clsx";
 import { statusColor, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
+import { ServerTag } from "./ServerTag";
 import type { MemberView } from "@/lib/types";
 
 export function MemberList({ members, onSelectUser }: { members: MemberView[]; onSelectUser?: (userId: string) => void }) {
@@ -50,6 +51,7 @@ function Section({
               />
             </div>
             <span className="truncate text-sm">{m.nickname ?? displayName(m.user)}</span>
+            {m.user.tag && <ServerTag tag={m.user.tag} badge={m.user.tagBadge} />}
           </button>
         ))}
       </div>

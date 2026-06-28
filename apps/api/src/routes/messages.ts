@@ -20,6 +20,8 @@ const authorSelect = {
   displayName: true,
   avatarUrl: true,
   status: true,
+  tag: true,
+  tagBadge: true,
 } as const;
 
 // Shape used everywhere we return a message, so reactions + reply preview are consistent.

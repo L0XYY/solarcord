@@ -93,6 +93,8 @@ model User {
   customStatus String?
   themePrimary String? // profile theme banner colour (hex)
   themeAccent  String? // profile theme accent colour (hex)
+  tag          String? // server tag the user reps next to their name
+  tagBadge     String? // the tag's badge icon
   isStaff      Boolean        @default(false)
   isSuspended  Boolean        @default(false)
   isBot        Boolean        @default(false)

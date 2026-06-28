@@ -20,7 +20,7 @@ export async function serverRoutes(app: FastifyInstance) {
   app.get("/servers", async (req) => {
     const memberships = await prisma.serverMember.findMany({
       where: { userId: userId(req) },
-      include: { server: { select: { id: true, name: true, iconUrl: true, memberCount: true } } },
+      include: { server: { select: { id: true, name: true, iconUrl: true, memberCount: true, tag: true, tagBadge: true } } },
       orderBy: { joinedAt: "asc" },
     });
     return { servers: memberships.map((m) => m.server) };
@@ -82,7 +82,7 @@ export async function serverRoutes(app: FastifyInstance) {
     const rows = await prisma.serverMember.findMany({
       where: { serverId: id },
       include: {
-        user: { select: { id: true, username: true, displayName: true, avatarUrl: true, status: true } },
+        user: { select: { id: true, username: true, displayName: true, avatarUrl: true, status: true, tag: true, tagBadge: true } },
         roles: { select: { roleId: true } },
       },
       orderBy: { joinedAt: "asc" },

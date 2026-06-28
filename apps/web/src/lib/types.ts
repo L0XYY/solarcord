@@ -3,6 +3,8 @@ export interface ServerSummary {
   name: string;
   iconUrl: string | null;
   memberCount?: number;
+  tag?: string | null;
+  tagBadge?: string | null;
 }
 
 export interface Channel {
@@ -67,6 +69,8 @@ export interface MemberView {
     displayName: string | null;
     avatarUrl: string | null;
     status: string;
+    tag?: string | null;
+    tagBadge?: string | null;
   };
 }
 
@@ -76,6 +80,8 @@ export interface PublicUserC {
   displayName: string | null;
   avatarUrl: string | null;
   status: string;
+  tag?: string | null;
+  tagBadge?: string | null;
 }
 
 export interface FriendRequestC {
@@ -138,5 +144,7 @@ export interface Message {
     displayName: string | null;
     avatarUrl: string | null;
     status: string;
+    tag?: string | null;
+    tagBadge?: string | null;
   };
 }

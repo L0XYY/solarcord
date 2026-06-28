@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { initials, displayName, formatTime } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { ServerTag } from "./ServerTag";
 import type { Channel, Message } from "@/lib/types";
 
 const QUICK_EMOJI = ["👍", "❤️", "😂", "🎉", "🔥", "😮", "😢", "👀"];
@@ -161,6 +162,7 @@ export function ChatPanel({
                 {(!grouped || m.replyTo) && (
                   <div className="flex items-baseline gap-2">
                     <span className="font-semibold">{displayName(m.author)}</span>
+                    {m.author.tag && <ServerTag tag={m.author.tag} badge={m.author.tagBadge} className="translate-y-px" />}
                     {m.isWebhook && (
                       <span className="rounded bg-aurora/20 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none text-aurora">
                         App

@@ -36,6 +36,8 @@ export const updateMeSchema = z.object({
   status: z.enum(["ONLINE", "IDLE", "DND", "INVISIBLE"]).optional(),
   themePrimary: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
   themeAccent: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  tag: z.string().max(6).nullable().optional(),
+  tagBadge: z.string().max(6_000_000).nullable().optional(),
 });
 
 // ── Servers ──

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, type SelfUser } from "@/lib/store";
@@ -70,11 +70,21 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
     status: user.status,
     themePrimary: user.themePrimary ?? "",
     themeAccent: user.themeAccent ?? "",
+    tag: user.tag ?? "",
+    tagBadge: user.tagBadge ?? "",
   });
+  const [taggedServers, setTaggedServers] = useState<{ id: string; name: string; tag: string; tagBadge: string | null }[]>([]);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Servers (the user is in) that have a tag to rep.
+  useEffect(() => {
+    api<{ servers: { id: string; name: string; tag: string | null; tagBadge: string | null }[] }>("/servers")
+      .then((r) => setTaggedServers(r.servers.filter((s) => s.tag).map((s) => ({ id: s.id, name: s.name, tag: s.tag!, tagBadge: s.tagBadge }))))
+      .catch(() => {});
+  }, []);
 
   async function save() {
     setSaving(true);
@@ -92,6 +102,8 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
           status: form.status,
           themePrimary: form.themePrimary || null,
           themeAccent: form.themeAccent || null,
+          tag: form.tag || null,
+          tagBadge: form.tagBadge || null,
         },
       });
       onSaved(updated);
@@ -114,6 +126,8 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
     isStaff: user.isStaff,
     themePrimary: form.themePrimary || null,
     themeAccent: form.themeAccent || null,
+    tag: form.tag || null,
+    tagBadge: form.tagBadge || null,
     badges: [],
   };
 
@@ -157,6 +171,29 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
               </button>
             )}
           </div>
+        </Field>
+
+        <Field label="Server tag">
+          <p className="-mt-0.5 mb-1.5 text-xs text-muted">Choose a server tag to rep next to your name.</p>
+          <select
+            className="field"
+            value={form.tag ? `${form.tag}|${form.tagBadge ?? ""}` : ""}
+            onChange={(e) => {
+              if (!e.target.value) return setForm((f) => ({ ...f, tag: "", tagBadge: "" }));
+              const picked = taggedServers.find((s) => `${s.tag}|${s.tagBadge ?? ""}` === e.target.value);
+              if (picked) setForm((f) => ({ ...f, tag: picked.tag, tagBadge: picked.tagBadge ?? "" }));
+            }}
+          >
+            <option value="">No tag</option>
+            {taggedServers.map((s) => (
+              <option key={s.id} value={`${s.tag}|${s.tagBadge ?? ""}`}>
+                {s.tag} — {s.name}
+              </option>
+            ))}
+            {form.tag && !taggedServers.some((s) => s.tag === form.tag) && (
+              <option value={`${form.tag}|${form.tagBadge ?? ""}`}>{form.tag} (current)</option>
+            )}
+          </select>
         </Field>
 
         <Field label="Status">

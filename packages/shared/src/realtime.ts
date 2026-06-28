@@ -8,6 +8,8 @@ export interface PublicUser {
   displayName: string | null;
   avatarUrl: string | null;
   status: PresenceStatus;
+  tag?: string | null;
+  tagBadge?: string | null;
 }
 
 export interface ReactionGroup {
