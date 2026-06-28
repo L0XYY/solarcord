@@ -13,23 +13,39 @@ interface IconDef {
   svg?: React.ReactNode;
 }
 
+// Crossed hammer + screwdriver, no background.
 const toolsSvg = (
   <>
-    {tile("#5b63e8", "#cfd2fb")}
     <g transform="rotate(45 24 24)">
-      <rect x="22.4" y="11" width="3.2" height="13" rx="1.6" fill="#5b63e8" />
-      <rect x="22.7" y="24" width="2.6" height="10" rx="1" fill="#5b63e8" />
+      <rect x="21.8" y="8.5" width="4.4" height="16" rx="2.2" fill="#5b63e8" />
+      <rect x="22.2" y="24.5" width="3.6" height="11.5" rx="1.4" fill="#5b63e8" />
     </g>
     <g transform="rotate(-45 24 24)">
-      <rect x="22.4" y="21" width="3.2" height="15" rx="1.6" fill="#5b63e8" />
-      <path d="M17.5 12h13l-2.2 5.5h-8.6z" fill="#5b63e8" />
+      <rect x="21.8" y="20" width="4.4" height="16.5" rx="2.2" fill="#5b63e8" />
+      <path d="M15.5 9.5h17l-2.8 7h-11.4z" fill="#5b63e8" />
     </g>
+  </>
+);
+
+// Gold crown, no background.
+const crownSvg = (
+  <>
+    <defs>
+      <linearGradient id="scCrown" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#ff9a1c" />
+        <stop offset="1" stopColor="#ffce4c" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M6.5 36.5q0-1 .4-4L9.6 20q.6-2.6 2.5-1.1l5 4.7q1 .8 1.8-.4l4.1-8.4q1.4-2.6 2.8 0l4.1 8.4q.8 1.2 1.8.4l5-4.7q1.9-1.5 2.5 1.1l2.7 12.5q.4 3 .4 4 0 2.5-2.6 2.5H9.1Q6.5 39 6.5 36.5Z"
+      fill="url(#scCrown)"
+    />
   </>
 );
 
 const ICONS: Record<string, IconDef> = {
   staff: { label: "SolarCord Staff", svg: toolsSvg },
-  owner: { label: "Owner", img: "/badges/owner.png" },
+  owner: { label: "Owner", svg: crownSvg },
   early_supporter: { label: "Early Supporter", img: "/badges/booster.png" },
   booster: { label: "Server Booster", img: "/badges/booster.png" },
   bug_hunter: { label: "Bug Hunter", img: "/badges/bughunter.png" },
