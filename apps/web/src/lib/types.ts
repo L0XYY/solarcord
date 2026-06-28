@@ -30,8 +30,13 @@ export interface ServerDetail {
   id: string;
   name: string;
   iconUrl: string | null;
+  bannerUrl: string | null;
   description: string | null;
   ownerId: string;
+  tag: string | null;
+  tagBadge: string | null;
+  boostCount: number;
+  boostLevel: number;
   channels: Channel[];
   roles: Role[];
   me: { isOwner: boolean; permissions: string };
@@ -92,6 +97,8 @@ export interface DiscoveryServer {
   bannerUrl: string | null;
   category: string | null;
   memberCount: number;
+  tag: string | null;
+  tagBadge: string | null;
   badges: string[];
 }
 

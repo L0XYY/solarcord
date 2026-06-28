@@ -62,11 +62,28 @@ export const DISCOVERY_CATEGORIES = [
 export const updateServerSchema = z.object({
   name: z.string().min(2).max(64).optional(),
   description: z.string().max(512).nullable().optional(),
-  iconUrl: z.string().url().nullable().optional(),
-  bannerUrl: z.string().url().nullable().optional(),
+  iconUrl: imageRef.nullable().optional(),
+  bannerUrl: imageRef.nullable().optional(),
+  tag: z.string().max(6).nullable().optional(),
+  tagBadge: z.string().max(6_000_000).nullable().optional(),
   visibility: serverVisibilitySchema.optional(),
   category: z.string().max(32).nullable().optional(),
 });
+
+// ── Server boosts ──
+export const BANNER_BOOST_REQUIREMENT = 7;
+export const BOOST_TIERS = [
+  { level: 1, required: 2, perk: "More emoji slots & better audio" },
+  { level: 2, required: 7, perk: "Server banner & 1080p streams" },
+  { level: 3, required: 14, perk: "Animated icon, vanity URL & max uploads" },
+] as const;
+
+export function boostLevelFor(count: number): number {
+  if (count >= 14) return 3;
+  if (count >= 7) return 2;
+  if (count >= 2) return 1;
+  return 0;
+}
 
 export const discoveryQuery = z.object({
   q: z.string().max(64).optional(),

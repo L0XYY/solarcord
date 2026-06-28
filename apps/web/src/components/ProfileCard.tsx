@@ -2,9 +2,16 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { api } from "@/lib/api";
-import { statusColor, statusLabel } from "@/lib/ui";
+import { statusColor, statusLabel, colorToHex } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { BadgeIcon } from "./BadgeIcon";
+
+export interface ProfileRole {
+  id: string;
+  name: string;
+  color: number;
+  iconUrl: string | null;
+}
 
 interface Profile {
   id: string;
@@ -20,7 +27,7 @@ interface Profile {
   badges: { key: string; name: string; iconUrl: string | null }[];
 }
 
-export function ProfileCard({ userId, onClose }: { userId: string; onClose: () => void }) {
+export function ProfileCard({ userId, roles, onClose }: { userId: string; roles?: ProfileRole[]; onClose: () => void }) {
   const [p, setP] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -30,8 +37,8 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
   const name = p?.displayName ?? p?.username ?? "";
 
   return (
-    <div className="fixed inset-0 z-[60] grid place-items-center bg-night-900/70 p-6 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-sm animate-fade-up overflow-hidden rounded-2xl glass-strong shadow-glass" onClick={(e) => e.stopPropagation()}>
+    <div className="animate-fade fixed inset-0 z-[60] grid place-items-center bg-night-900/70 p-6 backdrop-blur-sm" onClick={onClose}>
+      <div className="w-full max-w-sm animate-pop overflow-hidden rounded-2xl glass-strong shadow-glass" onClick={(e) => e.stopPropagation()}>
         <div className="h-20 bg-night-700" style={p?.bannerUrl ? { backgroundImage: `url(${p.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} />
         <div className="px-5 pb-5">
           <div className="-mt-9 flex items-end justify-between gap-2">
@@ -74,6 +81,29 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
             <div className="mt-4 border-t border-line/10 pt-3">
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted">About me</p>
               <p className="mt-1 whitespace-pre-wrap text-sm">{p.bio}</p>
+            </div>
+          )}
+
+          {roles && roles.length > 0 && (
+            <div className="mt-4 border-t border-line/10 pt-3">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Roles</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {roles.map((r) => (
+                  <span
+                    key={r.id}
+                    className="flex items-center gap-1.5 rounded-md border border-line/10 bg-night-700/60 px-2 py-1 text-xs"
+                    style={{ color: colorToHex(r.color) }}
+                  >
+                    {r.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.iconUrl} alt="" className="h-3 w-3 rounded" />
+                    ) : (
+                      <span className="h-2 w-2 rounded-full" style={{ background: colorToHex(r.color) }} />
+                    )}
+                    {r.name}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
 

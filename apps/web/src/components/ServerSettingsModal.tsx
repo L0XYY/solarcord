@@ -8,6 +8,8 @@ import {
   has,
   DISCOVERY_CATEGORIES,
   SERVER_BADGE_INFO,
+  BANNER_BOOST_REQUIREMENT,
+  BOOST_TIERS,
   type PermissionKey,
   type ServerBadgeType,
 } from "@solarcord/shared";
@@ -648,23 +650,67 @@ const VISIBILITY_OPTIONS: { value: string; label: string; description: string }[
   { value: "DISCOVERABLE", label: "Discoverable", description: "Listed in Server Discovery for anyone to find." },
 ];
 
+interface OverviewForm {
+  name: string;
+  description: string;
+  visibility: string;
+  category: string;
+  iconUrl: string | null;
+  bannerUrl: string | null;
+  tag: string;
+  tagBadge: string | null;
+}
+
 function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => void }) {
-  const [form, setForm] = useState({ name: "", description: "", visibility: "PRIVATE", category: "" });
+  const [form, setForm] = useState<OverviewForm>({
+    name: "",
+    description: "",
+    visibility: "PRIVATE",
+    category: "",
+    iconUrl: null,
+    bannerUrl: null,
+    tag: "",
+    tagBadge: null,
+  });
+  const [boost, setBoost] = useState({ count: 0, level: 0 });
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [boosting, setBoosting] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
+  const bannerUnlocked = boost.count >= BANNER_BOOST_REQUIREMENT;
+
+  const load = () =>
+    api<{
+      server: {
+        name: string;
+        description: string | null;
+        visibility: string;
+        category: string | null;
+        iconUrl: string | null;
+        bannerUrl: string | null;
+        tag: string | null;
+        tagBadge: string | null;
+        boostCount: number;
+        boostLevel: number;
+      };
+    }>(`/servers/${serverId}`).then(({ server }) => {
+      setForm({
+        name: server.name,
+        description: server.description ?? "",
+        visibility: server.visibility,
+        category: server.category ?? "",
+        iconUrl: server.iconUrl,
+        bannerUrl: server.bannerUrl,
+        tag: server.tag ?? "",
+        tagBadge: server.tagBadge,
+      });
+      setBoost({ count: server.boostCount, level: server.boostLevel });
+    });
+
   useEffect(() => {
-    api<{ server: { name: string; description: string | null; visibility: string; category: string | null } }>(`/servers/${serverId}`)
-      .then(({ server }) =>
-        setForm({
-          name: server.name,
-          description: server.description ?? "",
-          visibility: server.visibility,
-          category: server.category ?? "",
-        }),
-      )
-      .finally(() => setLoaded(true));
+    void load().finally(() => setLoaded(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverId]);
 
   async function save() {
@@ -678,6 +724,10 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
           description: form.description || null,
           visibility: form.visibility,
           category: form.category || null,
+          iconUrl: form.iconUrl,
+          bannerUrl: bannerUnlocked ? form.bannerUrl : null,
+          tag: form.tag.trim() ? form.tag.trim().toUpperCase() : null,
+          tagBadge: form.tagBadge,
         },
       });
       setMsg({ ok: true, text: "Saved." });
@@ -689,11 +739,88 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
     }
   }
 
+  async function doBoost() {
+    setBoosting(true);
+    try {
+      const { server } = await api<{ server: { boostCount: number; boostLevel: number } }>(`/servers/${serverId}/boost`, { method: "POST" });
+      setBoost({ count: server.boostCount, level: server.boostLevel });
+      onSaved();
+    } finally {
+      setBoosting(false);
+    }
+  }
+
   if (!loaded) return <div className="p-5 text-sm text-muted">Loading…</div>;
 
   return (
     <div className="h-full overflow-y-auto p-5">
       <h3 className="font-bold">Overview</h3>
+
+      {/* Icon + banner */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-muted">Server icon</label>
+          <div className="mt-2">
+            <ImageUpload value={form.iconUrl} shape="square" maxW={256} maxH={256} label="Upload icon" onChange={(v) => setForm({ ...form, iconUrl: v })} />
+          </div>
+        </div>
+        <div>
+          <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted">
+            Server banner
+            {!bannerUnlocked && <Icon name="ban" size={12} className="text-amber-400" />}
+          </label>
+          {bannerUnlocked ? (
+            <div className="mt-2">
+              <ImageUpload value={form.bannerUrl} shape="wide" maxW={1024} maxH={400} label="Upload banner" onChange={(v) => setForm({ ...form, bannerUrl: v })} />
+            </div>
+          ) : (
+            <p className="mt-2 rounded-xl border border-dashed border-line/15 p-3 text-xs text-muted">
+              Unlocks at <span className="font-semibold text-amber-400">{BANNER_BOOST_REQUIREMENT} boosts</span> (Level 2). Currently {boost.count}.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Boost status */}
+      <div className="mt-4 rounded-2xl border border-line/10 bg-night-900/40 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Server Boost · Level {boost.level}</p>
+            <p className="text-xs text-muted">{boost.count} boosts</p>
+          </div>
+          <button onClick={doBoost} disabled={boosting} className="btn-solar text-sm">
+            {boosting ? "Boosting…" : "Boost server"}
+          </button>
+        </div>
+        <div className="mt-3 space-y-1">
+          {BOOST_TIERS.map((t) => (
+            <div key={t.level} className={clsx("flex items-center gap-2 text-xs", boost.count >= t.required ? "text-emerald-400" : "text-muted")}>
+              <Icon name={boost.count >= t.required ? "compass" : "clock"} size={12} />
+              Level {t.level} ({t.required} boosts) — {t.perk}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Server tag */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-muted">Server tag (max 6)</label>
+          <input
+            className="field mt-1 uppercase"
+            maxLength={6}
+            placeholder="e.g. SCCU"
+            value={form.tag}
+            onChange={(e) => setForm({ ...form, tag: e.target.value.toUpperCase() })}
+          />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-muted">Tag badge</label>
+          <div className="mt-1">
+            <ImageUpload value={form.tagBadge} shape="square" maxW={48} maxH={48} format="image/png" label="Upload badge" onChange={(v) => setForm({ ...form, tagBadge: v })} />
+          </div>
+        </div>
+      </div>
 
       <label className="mt-4 block text-[11px] font-bold uppercase tracking-wider text-muted">Server name</label>
       <input className="field mt-1" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

@@ -33,6 +33,8 @@ const cardSelect = {
   isVerified: true,
   isPartnered: true,
   boostLevel: true,
+  tag: true,
+  tagBadge: true,
   memberCount: true,
   badges: { select: { type: true } },
 } as const;
@@ -63,6 +65,8 @@ export async function discoveryRoutes(app: FastifyInstance) {
         bannerUrl: s.bannerUrl,
         category: s.category,
         memberCount: s.memberCount,
+        tag: s.tag,
+        tagBadge: s.tagBadge,
         badges: deriveBadges(s),
       })),
     };

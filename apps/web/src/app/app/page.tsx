@@ -461,6 +461,7 @@ export default function AppPage() {
                   setMobileChat(true);
                 }}
                 onOpenUserSettings={() => setShowUserSettings(true)}
+                onAvatarClick={() => user && setProfileUserId(user.id)}
                 onLogout={logout}
               />
             ) : (
@@ -476,6 +477,7 @@ export default function AppPage() {
                 onSettings={() => setShowSettings(true)}
                 onShowWelcome={() => setShowWelcome(true)}
                 onOpenUserSettings={() => setShowUserSettings(true)}
+                onAvatarClick={() => user && setProfileUserId(user.id)}
                 onLogout={logout}
                 canManage={canManageServer}
               />
@@ -501,6 +503,7 @@ export default function AppPage() {
                 onToggleReaction={toggleReaction}
                 onReport={isDM ? undefined : reportMessage}
                 onMobileBack={() => setMobileChat(false)}
+                onSelectUser={setProfileUserId}
               />
             )}
           </div>
@@ -534,7 +537,19 @@ export default function AppPage() {
       )}
       {showWelcome && detail && <WelcomeModal serverId={detail.id} onClose={() => setShowWelcome(false)} />}
       {showUserSettings && <UserSettingsModal onClose={() => setShowUserSettings(false)} />}
-      {profileUserId && <ProfileCard userId={profileUserId} onClose={() => setProfileUserId(null)} />}
+      {profileUserId && (
+        <ProfileCard
+          userId={profileUserId}
+          roles={
+            detail
+              ? detail.roles
+                  .filter((r) => !r.isEveryone && (members.find((m) => m.user.id === profileUserId)?.roleIds ?? []).includes(r.id))
+                  .map((r) => ({ id: r.id, name: r.name, color: r.color, iconUrl: r.iconUrl }))
+              : undefined
+          }
+          onClose={() => setProfileUserId(null)}
+        />
+      )}
     </main>
   );
 }

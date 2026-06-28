@@ -6,6 +6,8 @@ import {
   updateGuideSchema,
   DEFAULT_EVERYONE_PERMISSIONS,
   Permission,
+  BANNER_BOOST_REQUIREMENT,
+  boostLevelFor,
 } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
@@ -99,7 +101,30 @@ export async function serverRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
     await requirePermission(id, userId(req), Permission.MANAGE_SERVER);
     const body = updateServerSchema.parse(req.body);
+
+    // A server banner is a boost-level-2 perk (7 boosts), like Discord.
+    if (body.bannerUrl) {
+      const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true } });
+      if ((current?.boostCount ?? 0) < BANNER_BOOST_REQUIREMENT) {
+        throw Errors.forbidden(`A server banner unlocks at ${BANNER_BOOST_REQUIREMENT} boosts`);
+      }
+    }
+
     const server = await prisma.server.update({ where: { id }, data: body });
+    return { server };
+  });
+
+  // Boost the server (any member). Increments the count and recomputes the level.
+  app.post("/servers/:id/boost", async (req) => {
+    const { id } = req.params as { id: string };
+    await resolveMember(id, userId(req));
+    const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true } });
+    const boostCount = (current?.boostCount ?? 0) + 1;
+    const server = await prisma.server.update({
+      where: { id },
+      data: { boostCount, boostLevel: boostLevelFor(boostCount) },
+      select: { boostCount: true, boostLevel: true },
+    });
     return { server };
   });
 

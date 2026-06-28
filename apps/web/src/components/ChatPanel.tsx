@@ -23,6 +23,7 @@ interface ChatPanelProps {
   onToggleReaction: (messageId: string, emoji: string, mine: boolean) => void;
   onReport?: (messageId: string) => void;
   onMobileBack?: () => void;
+  onSelectUser?: (userId: string) => void;
 }
 
 export function ChatPanel({
@@ -40,6 +41,7 @@ export function ChatPanel({
   onToggleReaction,
   onReport,
   onMobileBack,
+  onSelectUser,
 }: ChatPanelProps) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
@@ -135,7 +137,7 @@ export function ChatPanel({
           const isEditing = editing?.id === m.id;
 
           return (
-            <div key={m.id} className="group relative flex gap-3 rounded-lg px-2 py-0.5 hover:bg-night-800/40">
+            <div key={m.id} className="group relative flex animate-msg gap-3 rounded-lg px-2 py-0.5 hover:bg-night-800/40">
               {/* Reply preview line */}
               {m.replyTo && (
                 <div className="absolute -top-0.5 left-14 flex items-center gap-1 text-xs text-muted">
@@ -148,7 +150,11 @@ export function ChatPanel({
               )}
 
               <div className={clsx("w-10 shrink-0", m.replyTo && "pt-5")}>
-                {(!grouped || m.replyTo) && <Avatar name={displayName(m.author)} src={m.author.avatarUrl} size={40} />}
+                {(!grouped || m.replyTo) && (
+                  <button onClick={() => onSelectUser?.(m.author.id)} className="transition hover:opacity-80" title={displayName(m.author)}>
+                    <Avatar name={displayName(m.author)} src={m.author.avatarUrl} size={40} />
+                  </button>
+                )}
               </div>
 
               <div className={clsx("min-w-0 flex-1", m.replyTo && "pt-5")}>

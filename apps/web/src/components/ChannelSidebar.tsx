@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/store";
 import { statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
+import { ServerTag } from "./ServerTag";
 import type { Channel, ServerDetail } from "@/lib/types";
 
 function channelIcon(type: string): IconName {
@@ -32,6 +33,7 @@ export function ChannelSidebar({
   onSettings,
   onShowWelcome,
   onOpenUserSettings,
+  onAvatarClick,
   onLogout,
   canManage,
 }: {
@@ -43,6 +45,7 @@ export function ChannelSidebar({
   onSettings: () => void;
   onShowWelcome: () => void;
   onOpenUserSettings: () => void;
+  onAvatarClick: () => void;
   onLogout: () => void;
   canManage: boolean;
 }) {
@@ -74,8 +77,11 @@ export function ChannelSidebar({
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-line/5 bg-night-800/50 md:w-60">
-      <header className="flex h-14 items-center justify-between border-b border-line/5 px-4">
-        <h2 className="truncate font-bold">{server?.name ?? "—"}</h2>
+      <header className="flex h-14 items-center justify-between gap-2 border-b border-line/5 px-4">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <h2 className="truncate font-bold">{server?.name ?? "—"}</h2>
+          {server?.tag && <ServerTag tag={server.tag} badge={server.tagBadge} />}
+        </div>
         <div className="flex items-center gap-1">
           {server && (
             <button
@@ -157,7 +163,7 @@ export function ChannelSidebar({
       {/* User control panel */}
       {user && (
         <div className="flex items-center gap-2 border-t border-line/5 bg-night-900/60 px-2 py-2">
-          <div className="relative">
+          <button onClick={onAvatarClick} className="relative shrink-0 transition hover:opacity-80" title="View profile">
             <Avatar name={displayName(user)} src={user.avatarUrl} size={36} />
             <span
               className={clsx(
@@ -166,7 +172,7 @@ export function ChannelSidebar({
               )}
               title={statusLabel(user.status)}
             />
-          </div>
+          </button>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{displayName(user)}</p>
             <p className="truncate text-xs text-muted">{statusLabel(user.status)}</p>

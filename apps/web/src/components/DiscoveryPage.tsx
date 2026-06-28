@@ -5,6 +5,7 @@ import { DISCOVERY_CATEGORIES } from "@solarcord/shared";
 import { api } from "@/lib/api";
 import { initials } from "@/lib/ui";
 import { BadgeRow } from "./BadgeChip";
+import { ServerTag } from "./ServerTag";
 import type { DiscoveryServer } from "@/lib/types";
 
 export function DiscoveryPage({ onJoined }: { onJoined: (serverId: string) => void }) {
@@ -93,8 +94,9 @@ export function DiscoveryPage({ onJoined }: { onJoined: (serverId: string) => vo
                       initials(s.name)
                     )}
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     <h3 className="truncate font-bold">{s.name}</h3>
+                    {s.tag && <ServerTag tag={s.tag} badge={s.tagBadge} />}
                     <BadgeRow types={s.badges} />
                   </div>
                   <p className="mt-1 line-clamp-2 h-10 text-sm text-muted">{s.description || "No description provided."}</p>

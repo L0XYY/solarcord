@@ -178,6 +178,9 @@ model Server {
   isVerified  Boolean          @default(false)
   isPartnered Boolean          @default(false)
   boostLevel  Int              @default(0)
+  boostCount  Int              @default(0) // number of boosts the server has
+  tag         String?          // short server tag (e.g. "5CCU")
+  tagBadge    String?          // tag badge icon (data URL or emoji)
   memberCount Int              @default(1)
   vanityUrl   String?          @unique
   bannedWords String[]         @default([]) // AutoMod keyword filter
