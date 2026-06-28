@@ -25,6 +25,7 @@ interface ChatPanelProps {
   onReport?: (messageId: string) => void;
   onMobileBack?: () => void;
   onSelectUser?: (userId: string) => void;
+  onStartCall?: () => void;
 }
 
 export function ChatPanel({
@@ -43,6 +44,7 @@ export function ChatPanel({
   onReport,
   onMobileBack,
   onSelectUser,
+  onStartCall,
 }: ChatPanelProps) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
@@ -108,6 +110,15 @@ export function ChatPanel({
             <span className="mx-2 h-4 w-px bg-line/10" />
             <p className="truncate text-sm text-muted">{channel.topic}</p>
           </>
+        )}
+        {onStartCall && (
+          <button
+            onClick={onStartCall}
+            title="Start voice call"
+            className="ml-auto grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-emerald-400"
+          >
+            <Icon name="volume" size={18} />
+          </button>
         )}
       </header>
 

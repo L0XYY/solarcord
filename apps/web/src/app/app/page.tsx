@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { api, bootstrapSession } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { connectSocket, disconnectSocket, type AppSocket } from "@/lib/socket";
+import { joinVoice, ringDM } from "@/lib/voice";
 import { displayName } from "@/lib/ui";
 import { ServerDock } from "@/components/ServerDock";
 import { ChannelSidebar } from "@/components/ChannelSidebar";
@@ -63,6 +64,7 @@ export default function AppPage() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  const [incomingCall, setIncomingCall] = useState<{ conversationId: string; fromName: string } | null>(null);
   // On mobile we show one pane at a time: false = list/sidebar, true = chat/friends.
   const [mobileChat, setMobileChat] = useState(false);
 
@@ -187,6 +189,9 @@ export default function AppPage() {
       socket.emit("conversation:focus", { conversationId: id });
       void refetchConversations();
     };
+    const onIncomingCall = (d: { conversationId: string; from: { username: string; displayName: string | null } }) => {
+      setIncomingCall({ conversationId: d.conversationId, fromName: d.from.displayName ?? d.from.username });
+    };
 
     socket.on("message:create", onMessage);
     socket.on("message:update", onMessageUpdate);
@@ -199,6 +204,7 @@ export default function AppPage() {
     socket.on("friend:request", onFriendRequest);
     socket.on("friend:update", onFriendUpdate);
     socket.on("conversation:new", onConversationNew);
+    socket.on("voice:incoming", onIncomingCall);
 
     return () => {
       socket.off("message:create", onMessage);
@@ -212,6 +218,7 @@ export default function AppPage() {
       socket.off("friend:request", onFriendRequest);
       socket.off("friend:update", onFriendUpdate);
       socket.off("conversation:new", onConversationNew);
+      socket.off("voice:incoming", onIncomingCall);
     };
   }, [ready, user, refetchFriends, refetchConversations]);
 
@@ -504,6 +511,15 @@ export default function AppPage() {
                 onReport={isDM ? undefined : reportMessage}
                 onMobileBack={() => setMobileChat(false)}
                 onSelectUser={setProfileUserId}
+                onStartCall={
+                  isDM && chatTarget?.kind === "dm"
+                    ? () => {
+                        const conv = chatTarget.conv;
+                        void joinVoice(conv.id, conversationName(conv), "dm");
+                        ringDM(conv.id);
+                      }
+                    : undefined
+                }
               />
             )}
           </div>
@@ -537,6 +553,26 @@ export default function AppPage() {
       )}
       {showWelcome && detail && <WelcomeModal serverId={detail.id} onClose={() => setShowWelcome(false)} />}
       {showUserSettings && <UserSettingsModal onClose={() => setShowUserSettings(false)} />}
+      {incomingCall && (
+        <div className="animate-pop fixed bottom-6 left-1/2 z-[70] -translate-x-1/2 rounded-2xl glass-strong px-5 py-4 shadow-glass">
+          <p className="text-sm font-semibold">Incoming call</p>
+          <p className="text-xs text-muted">{incomingCall.fromName} is calling…</p>
+          <div className="mt-3 flex gap-2">
+            <button
+              onClick={() => {
+                void joinVoice(incomingCall.conversationId, `Call with ${incomingCall.fromName}`, "dm");
+                setIncomingCall(null);
+              }}
+              className="btn-solar flex-1 py-1.5 text-sm"
+            >
+              Accept
+            </button>
+            <button onClick={() => setIncomingCall(null)} className="btn-ghost flex-1 py-1.5 text-sm">
+              Decline
+            </button>
+          </div>
+        </div>
+      )}
       {profileUserId && (
         <ProfileCard
           userId={profileUserId}

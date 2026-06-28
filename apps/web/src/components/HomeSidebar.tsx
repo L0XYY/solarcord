@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/store";
 import { initials, statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { VoiceBar } from "./VoiceBar";
 import type { ConversationSummary } from "@/lib/types";
 
 export function conversationName(c: ConversationSummary): string {
@@ -110,6 +111,8 @@ export function HomeSidebar({
           );
         })}
       </div>
+
+      <VoiceBar />
 
       {user && (
         <div className="flex items-center gap-2 border-t border-line/5 bg-night-900/60 px-2 py-2">

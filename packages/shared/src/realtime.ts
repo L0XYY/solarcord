@@ -59,6 +59,13 @@ export interface ServerToClientEvents {
   "friend:request": (data: { from: PublicUser }) => void;
   "friend:update": () => void;
   "conversation:new": (data: { id: string }) => void;
+  // Voice (WebRTC signalling)
+  "voice:peers": (data: { roomId: string; peers: VoicePeer[] }) => void;
+  "voice:peer-joined": (data: { roomId: string; peer: VoicePeer }) => void;
+  "voice:peer-left": (data: { roomId: string; socketId: string }) => void;
+  "voice:signal": (data: { from: string; signal: unknown }) => void;
+  "voice:state": (data: { roomId: string; userId: string; muted: boolean }) => void;
+  "voice:incoming": (data: { conversationId: string; from: VoicePeer }) => void;
   error: (data: { code: string; message: string }) => void;
 }
 
@@ -72,6 +79,20 @@ export interface ClientToServerEvents {
   "conversation:focus": (data: { conversationId: string }) => void;
   "conversation:blur": (data: { conversationId: string }) => void;
   "conversation:typing": (data: { conversationId: string }) => void;
+  // Voice (WebRTC signalling)
+  "voice:join": (data: { roomId: string }) => void;
+  "voice:leave": (data: { roomId: string }) => void;
+  "voice:signal": (data: { to: string; signal: unknown }) => void;
+  "voice:state": (data: { roomId: string; muted: boolean }) => void;
+  "voice:call": (data: { conversationId: string }) => void;
+}
+
+export interface VoicePeer {
+  socketId: string;
+  userId: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
 }
 
 export const room = {
@@ -79,4 +100,5 @@ export const room = {
   server: (id: string) => `server:${id}`,
   channel: (id: string) => `channel:${id}`,
   dm: (id: string) => `dm:${id}`,
+  voice: (id: string) => `voice:${id}`,
 };

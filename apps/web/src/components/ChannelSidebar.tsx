@@ -7,6 +7,8 @@ import { statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import { ServerTag } from "./ServerTag";
+import { VoiceBar } from "./VoiceBar";
+import { useVoice, joinVoice } from "@/lib/voice";
 import { boostLevelFor, BOOST_TIERS } from "@solarcord/shared";
 import type { Channel, ServerDetail } from "@/lib/types";
 
@@ -70,6 +72,7 @@ export function ChannelSidebar({
   canManage: boolean;
 }) {
   const user = useAuth((s) => s.user);
+  const voice = useVoice();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -180,24 +183,45 @@ export function ChannelSidebar({
         </p>
         {server?.channels.map((c) => {
           const active = c.id === activeChannelId;
+          const isVoice = c.type === "VOICE" || c.type === "STAGE" || c.type === "VIDEO";
           const selectable = c.type === "TEXT" || c.type === "ANNOUNCEMENT";
+          const inThisVoice = voice.roomId === c.id;
+          const voiceMembers = inThisVoice ? Object.values(voice.members) : [];
           return (
-            <button
-              key={c.id}
-              disabled={!selectable}
-              onClick={() => selectable && onSelectChannel(c)}
-              className={clsx(
-                "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
-                active ? "bg-solar/15 text-solar" : "text-muted hover:bg-night-700/60 hover:text-ink",
-                !selectable && "opacity-60",
+            <div key={c.id}>
+              <button
+                disabled={!selectable && !isVoice}
+                onClick={() => (isVoice ? void joinVoice(c.id, `🔊 ${c.name}`, "channel") : selectable && onSelectChannel(c))}
+                className={clsx(
+                  "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
+                  active || inThisVoice ? "bg-solar/15 text-solar" : "text-muted hover:bg-night-700/60 hover:text-ink",
+                  !selectable && !isVoice && "opacity-60",
+                )}
+              >
+                <Icon name={channelIcon(c.type)} size={16} className="shrink-0 text-muted" />
+                <span className="truncate">{c.name}</span>
+              </button>
+              {/* Voice participants */}
+              {inThisVoice && (
+                <div className="ml-6 mt-0.5 space-y-0.5">
+                  {user && (
+                    <div className="flex items-center gap-2 rounded px-2 py-1 text-xs text-ink">
+                      <Avatar name={displayName(user)} src={user.avatarUrl} size={20} /> {displayName(user)}
+                    </div>
+                  )}
+                  {voiceMembers.map((m) => (
+                    <div key={m.socketId} className="flex items-center gap-2 rounded px-2 py-1 text-xs text-muted">
+                      <Avatar name={m.displayName ?? m.username} src={m.avatarUrl} size={20} /> {m.displayName ?? m.username}
+                    </div>
+                  ))}
+                </div>
               )}
-            >
-              <Icon name={channelIcon(c.type)} size={16} className="shrink-0 text-muted" />
-              <span className="truncate">{c.name}</span>
-            </button>
+            </div>
           );
         })}
       </div>
+
+      <VoiceBar />
 
       {/* User control panel */}
       {user && (
