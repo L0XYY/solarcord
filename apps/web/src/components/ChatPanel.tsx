@@ -281,13 +281,11 @@ export function ChatPanel({
         })}
       </div>
 
-      <div className="h-5 px-5 text-xs text-muted">
-        {typingNames.length > 0 && (
-          <span className="animate-fade-up">
-            {typingNames.slice(0, 3).join(", ")} {typingNames.length === 1 ? "is" : "are"} typing…
-          </span>
-        )}
-      </div>
+      {typingNames.length > 0 && (
+        <div className="animate-fade-up px-5 pb-1 text-xs text-muted">
+          {typingNames.slice(0, 3).join(", ")} {typingNames.length === 1 ? "is" : "are"} typing…
+        </div>
+      )}
 
       {/* Replying-to banner */}
       {replyTo && (
@@ -306,9 +304,9 @@ export function ChatPanel({
           e.preventDefault();
           void submit();
         }}
-        className="px-4 pb-4"
+        className="px-4 pb-4 pt-1"
       >
-        <div className={clsx("glass flex items-end gap-2 px-4 py-3", replyTo ? "rounded-b-2xl" : "rounded-2xl")}>
+        <div className={clsx("glass flex items-center gap-2 px-4 py-2", replyTo ? "rounded-b-2xl" : "rounded-2xl")}>
           <textarea
             ref={inputRef}
             rows={1}
@@ -324,7 +322,7 @@ export function ChatPanel({
               }
             }}
             placeholder={placeholderLabel ?? `Message #${channel.name}`}
-            className="max-h-40 flex-1 resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
+            className="block max-h-40 flex-1 resize-none self-center bg-transparent py-1.5 text-sm leading-5 text-ink outline-none placeholder:text-muted"
           />
           <button disabled={!value.trim() || sending} className="btn-solar grid h-9 w-9 place-items-center rounded-xl p-0" title="Send">
             <Icon name="send" size={16} />
