@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { api } from "@/lib/api";
 import { statusColor, statusLabel } from "@/lib/ui";
 import { Avatar } from "./Avatar";
+import { BadgeIcon } from "./BadgeIcon";
 
 interface Profile {
   id: string;
@@ -61,15 +62,18 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
             </div>
           )}
 
-          {p && p.badges.length > 0 && (
-            <div className="mt-4 border-t border-line/10 pt-3">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted">Badges</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {p.badges.map((b) => (
-                  <span key={b.key} className="rounded-full bg-night-700/70 px-2.5 py-1 text-xs" title={b.name}>
-                    {b.name}
-                  </span>
-                ))}
+          {p && (p.badges.length > 0 || p.isStaff) && (
+            <div className="mt-4 rounded-xl bg-night-900/40 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {p.isStaff && !p.badges.some((b) => b.key === "staff") && <BadgeIcon badge="staff" size={26} />}
+                {p.badges.map((b) =>
+                  b.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={b.key} src={b.iconUrl} alt={b.name} title={b.name} className="h-[26px] w-[26px] rounded" />
+                  ) : (
+                    <BadgeIcon key={b.key} badge={b.key} size={26} title={b.name} />
+                  ),
+                )}
               </div>
             </div>
           )}

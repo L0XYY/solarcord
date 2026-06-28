@@ -20,6 +20,8 @@ async function main() {
     { key: "solar_plus", name: "Solar+ Subscriber", description: "Active Solar+ subscriber" },
     { key: "bug_hunter", name: "Bug Hunter", description: "Reported verified bugs" },
     { key: "active_developer", name: "Active Developer", description: "Maintains an active app" },
+    { key: "moderator", name: "Moderator", description: "Trusted community moderator" },
+    { key: "verified", name: "Verified", description: "A verified account" },
   ];
   for (const b of platformBadges) {
     await prisma.userBadge.upsert({ where: { key: b.key }, update: {}, create: b });
@@ -36,6 +38,18 @@ async function main() {
       isStaff: true,
     },
   });
+
+  // Grant Nova a few profile badges so they show on her profile card.
+  for (const key of ["staff", "early_supporter", "active_developer", "verified"]) {
+    const badge = await prisma.userBadge.findUnique({ where: { key }, select: { id: true } });
+    if (badge) {
+      await prisma.userBadgeLink.upsert({
+        where: { userId_badgeId: { userId: nova.id, badgeId: badge.id } },
+        update: {},
+        create: { userId: nova.id, badgeId: badge.id },
+      });
+    }
+  }
 
   // Demo servers owned by Nova — populate Discovery with badges.
   const demoServers = [
