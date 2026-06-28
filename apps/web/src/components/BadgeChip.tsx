@@ -5,7 +5,7 @@ import { BadgeIcon, hasBadgeIcon } from "./BadgeIcon";
 export function BadgeChip({ type, size = "sm" }: { type: string; size?: "sm" | "md" }) {
   const info = SERVER_BADGE_INFO[type as ServerBadgeType];
   if (!info) return null;
-  const px = size === "md" ? 24 : 20;
+  const px = size === "md" ? 20 : 16;
 
   // Use the crisp SVG icon when we have one (e.g. the verified check), else the emoji chip.
   if (hasBadgeIcon(type)) {

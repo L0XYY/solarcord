@@ -78,16 +78,16 @@ export function ProfileCardView({ data, roles }: { data: ProfileViewData; roles?
 
           {(data.badges?.length || data.isStaff) && (
             <div
-              className="mb-1 flex flex-wrap items-center justify-end gap-1.5 rounded-xl px-2 py-1.5"
+              className="mb-1 flex flex-wrap items-center justify-end gap-1 rounded-xl px-2 py-1"
               style={{ background: themed ? "rgba(0,0,0,.15)" : "rgb(var(--night-900) / 0.6)" }}
             >
-              {data.isStaff && !data.badges?.some((b) => b.key === "staff") && <BadgeIcon badge="staff" size={22} />}
+              {data.isStaff && !data.badges?.some((b) => b.key === "staff") && <BadgeIcon badge="staff" size={18} />}
               {data.badges?.map((b) =>
                 b.iconUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={b.key} src={b.iconUrl} alt={b.name} title={b.name} className="h-[22px] w-[22px] rounded" />
+                  <img key={b.key} src={b.iconUrl} alt={b.name} title={b.name} className="h-[18px] w-[18px] rounded" />
                 ) : (
-                  <BadgeIcon key={b.key} badge={b.key} size={22} title={b.name} />
+                  <BadgeIcon key={b.key} badge={b.key} size={18} title={b.name} />
                 ),
               )}
             </div>
