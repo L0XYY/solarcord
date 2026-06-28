@@ -51,23 +51,22 @@ const ICONS: Record<string, IconDef> = {
       </>
     ),
   },
+  // Flame, no background tile.
   solar_plus: {
     label: "Solar+",
     svg: (
       <>
-        <defs>
-          <linearGradient id="scBolt" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#fff27a" />
-            <stop offset="1" stopColor="#f5b400" />
-          </linearGradient>
-        </defs>
-        {tile("#f0b71e", "#fff3c4")}
         <path
-          d="M29 11 16.5 27.5 23 26.5 19 37.5 33 19.5 25.5 20.5Z"
-          fill="url(#scBolt)"
-          stroke="#e0a800"
-          strokeWidth="1.2"
-          strokeLinejoin="round"
+          d="M25 3c-1 6-5.5 8.5-5.5 14.5 0 1.8.5 3.3 1.4 4.4C17.5 20.5 15 17.5 15 13.5c-3 3-5 7.2-5 12.2 0 .6 0 1.1.1 1.6C9.2 26.2 8 23.9 8 20.6c-2.4 3.1-4 6.9-4 11.4C4 41 12 47 24 47s20-6 20-15c0-3.6-1-6.9-2.8-9.6.2 1.5-.3 3-1.2 4 .5-3.9-1.2-7.5-4.2-9.7.6 1.7.4 3.5-.5 4.9C36 16 33 10.6 28 7.5 27.5 6 27 4.4 25 3Z"
+          fill="#ff7212"
+        />
+        <path
+          d="M24 22c-3 4.2-5.2 6.8-5.2 11 0 6.2 3.1 11 5.2 12 2.1-1 5.2-5.8 5.2-12 0-4.2-2.2-6.8-5.2-11Z"
+          fill="#ffc42e"
+        />
+        <path
+          d="M24 32.5c-1.6 2.2-2.7 3.6-2.7 6 0 3.4 1.5 6 2.7 6.5 1.2-.5 2.7-3.1 2.7-6.5 0-2.4-1.1-3.8-2.7-6Z"
+          fill="#ffe79e"
         />
       </>
     ),
