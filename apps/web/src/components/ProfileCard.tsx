@@ -34,7 +34,7 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
       <div className="w-full max-w-sm animate-fade-up overflow-hidden rounded-2xl glass-strong shadow-glass" onClick={(e) => e.stopPropagation()}>
         <div className="h-20 bg-night-700" style={p?.bannerUrl ? { backgroundImage: `url(${p.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} />
         <div className="px-5 pb-5">
-          <div className="-mt-9 flex items-end justify-between">
+          <div className="-mt-9 flex items-end justify-between gap-2">
             <div className="relative">
               <div className="rounded-2xl border-4 border-night-800">
                 <Avatar name={name || "?"} src={p?.avatarUrl} size={56} rounded="xl" />
@@ -43,6 +43,21 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
                 <span className={clsx("absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-4 border-night-800", statusColor(p.status))} title={statusLabel(p.status)} />
               )}
             </div>
+
+            {/* Discord-style badge row, top-right next to the avatar. */}
+            {p && (p.badges.length > 0 || p.isStaff) && (
+              <div className="mb-1 flex flex-wrap items-center justify-end gap-1.5 rounded-xl border border-line/10 bg-night-900/60 px-2 py-1.5">
+                {p.isStaff && !p.badges.some((b) => b.key === "staff") && <BadgeIcon badge="staff" size={22} />}
+                {p.badges.map((b) =>
+                  b.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={b.key} src={b.iconUrl} alt={b.name} title={b.name} className="h-[22px] w-[22px] rounded" />
+                  ) : (
+                    <BadgeIcon key={b.key} badge={b.key} size={22} title={b.name} />
+                  ),
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-3 flex items-center gap-2">
@@ -62,21 +77,6 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
             </div>
           )}
 
-          {p && (p.badges.length > 0 || p.isStaff) && (
-            <div className="mt-4 rounded-xl bg-night-900/40 p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                {p.isStaff && !p.badges.some((b) => b.key === "staff") && <BadgeIcon badge="staff" size={26} />}
-                {p.badges.map((b) =>
-                  b.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={b.key} src={b.iconUrl} alt={b.name} title={b.name} className="h-[26px] w-[26px] rounded" />
-                  ) : (
-                    <BadgeIcon key={b.key} badge={b.key} size={26} title={b.name} />
-                  ),
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

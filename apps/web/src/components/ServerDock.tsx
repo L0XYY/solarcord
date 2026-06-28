@@ -1,6 +1,7 @@
 "use client";
 import clsx from "clsx";
 import { initials } from "@/lib/ui";
+import { Icon } from "./Icon";
 import type { ServerSummary } from "@/lib/types";
 
 export function ServerDock({
@@ -81,9 +82,9 @@ export function ServerDock({
         <button
           onClick={onCreate}
           title="Create a server"
-          className="grid h-12 w-12 place-items-center rounded-2xl bg-night-700 text-2xl font-light text-solar transition-all hover:rounded-xl hover:bg-solar/15"
+          className="grid h-12 w-12 place-items-center rounded-2xl bg-night-700 text-emerald-400 transition-all hover:rounded-xl hover:bg-emerald-400/15"
         >
-          +
+          <Icon name="plus" size={22} />
         </button>
 
         <button onClick={onDiscover} title="Discover servers" className="group relative">
@@ -95,11 +96,11 @@ export function ServerDock({
           />
           <span
             className={clsx(
-              "grid h-12 w-12 place-items-center rounded-2xl text-xl transition-all",
+              "grid h-12 w-12 place-items-center rounded-2xl transition-all",
               discoverActive ? "rounded-xl bg-solar/20 text-solar ring-2 ring-solar/50" : "bg-night-700 text-emerald-400 hover:rounded-xl hover:bg-emerald-400/15",
             )}
           >
-            🧭
+            <Icon name="compass" size={22} />
           </span>
         </button>
       </div>

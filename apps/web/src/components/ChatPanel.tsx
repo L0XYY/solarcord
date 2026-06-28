@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { initials, displayName, formatTime } from "@/lib/ui";
 import { Avatar } from "./Avatar";
+import { Icon } from "./Icon";
 import type { Channel, Message } from "@/lib/types";
 
 const QUICK_EMOJI = ["👍", "❤️", "😂", "🎉", "🔥", "😮", "😢", "👀"];
@@ -93,15 +94,11 @@ export function ChatPanel({
     <section className="flex min-w-0 flex-1 flex-col bg-night-900/30">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b border-line/5 px-4">
         {onMobileBack && (
-          <button onClick={onMobileBack} className="-ml-1 mr-1 text-xl text-muted hover:text-ink md:hidden" aria-label="Back" title="Back">
-            ‹
+          <button onClick={onMobileBack} className="-ml-1 mr-1 grid place-items-center text-muted hover:text-ink md:hidden" aria-label="Back" title="Back">
+            <Icon name="chevronLeft" size={20} />
           </button>
         )}
-        {enableReactions ? (
-          <span className="text-lg text-muted">#</span>
-        ) : (
-          <span className="text-base text-muted">@</span>
-        )}
+        {enableReactions ? <Icon name="hash" size={18} className="text-muted" /> : <span className="text-base text-muted">@</span>}
         <h1 className="font-bold">{channel.name}</h1>
         {channel.topic && (
           <>
@@ -232,7 +229,7 @@ export function ChatPanel({
                   {enableReactions && (
                   <div className="relative">
                     <ActionBtn title="React" onClick={() => setPickerFor(pickerFor === m.id ? null : m.id)}>
-                      ☺
+                      <Icon name="smile" size={16} />
                     </ActionBtn>
                     {pickerFor === m.id && (
                       <div className="absolute right-0 top-9 z-10 flex gap-1 rounded-xl glass-strong p-2 shadow-glass">
@@ -254,21 +251,21 @@ export function ChatPanel({
                   </div>
                   )}
                   <ActionBtn title="Reply" onClick={() => setReplyTo(m)}>
-                    ↩
+                    <Icon name="reply" size={16} />
                   </ActionBtn>
                   {mine && (
                     <ActionBtn title="Edit" onClick={() => setEditing({ id: m.id, content: m.content })}>
-                      ✎
+                      <Icon name="pencil" size={15} />
                     </ActionBtn>
                   )}
                   {!mine && onReport && (
                     <ActionBtn title="Report" onClick={() => onReport(m.id)}>
-                      ⚑
+                      <Icon name="flag" size={15} />
                     </ActionBtn>
                   )}
                   {(mine || canManageMessages) && (
                     <ActionBtn title="Delete" danger onClick={() => void onDelete(m.id)}>
-                      🗑
+                      <Icon name="trash" size={15} />
                     </ActionBtn>
                   )}
                 </div>
@@ -292,8 +289,8 @@ export function ChatPanel({
           <span>
             Replying to <span className="font-semibold text-aurora">{displayName(replyTo.author)}</span>
           </span>
-          <button onClick={() => setReplyTo(null)} className="hover:text-solar-ember" title="Cancel reply">
-            ✕
+          <button onClick={() => setReplyTo(null)} className="grid place-items-center hover:text-solar-ember" title="Cancel reply">
+            <Icon name="x" size={14} />
           </button>
         </div>
       )}
@@ -323,8 +320,8 @@ export function ChatPanel({
             placeholder={placeholderLabel ?? `Message #${channel.name}`}
             className="max-h-40 flex-1 resize-none bg-transparent text-sm text-ink outline-none placeholder:text-muted"
           />
-          <button disabled={!value.trim() || sending} className="btn-solar h-9 w-9 rounded-xl p-0 text-base" title="Send">
-            ↑
+          <button disabled={!value.trim() || sending} className="btn-solar grid h-9 w-9 place-items-center rounded-xl p-0" title="Send">
+            <Icon name="send" size={16} />
           </button>
         </div>
       </form>

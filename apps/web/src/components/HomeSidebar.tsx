@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/store";
 import { initials, statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
+import { Icon } from "./Icon";
 import type { ConversationSummary } from "@/lib/types";
 
 export function conversationName(c: ConversationSummary): string {
@@ -48,7 +49,7 @@ export function HomeSidebar({
             friendsActive ? "bg-solar/15 text-solar" : "text-muted hover:bg-night-700/60 hover:text-ink",
           )}
         >
-          <span className="text-lg">👥</span>
+          <Icon name="users" size={18} />
           Friends
           {pendingCount > 0 && (
             <span className="ml-auto rounded-full bg-solar-ember px-1.5 text-[10px] font-bold text-night-900">
@@ -60,7 +61,7 @@ export function HomeSidebar({
           href="/developer"
           className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-muted transition hover:bg-night-700/60 hover:text-solar"
         >
-          <span className="text-lg">🤖</span>
+          <Icon name="bot" size={18} />
           Developer Portal
         </Link>
         {user?.isStaff && (
@@ -68,7 +69,7 @@ export function HomeSidebar({
             href="/admin"
             className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-muted transition hover:bg-night-700/60 hover:text-solar"
           >
-            <span className="text-lg">🛡</span>
+            <Icon name="shield" size={18} />
             Admin Console
           </Link>
         )}
@@ -124,16 +125,16 @@ export function HomeSidebar({
           <button
             onClick={onOpenUserSettings}
             title="User settings"
-            className="rounded-lg px-2 py-1 leading-none text-muted hover:bg-night-700 hover:text-ink"
+            className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-ink"
           >
-            ⚙
+            <Icon name="settings" size={16} />
           </button>
           <button
             onClick={onLogout}
             title="Log out"
-            className="rounded-lg px-2 py-1 text-lg leading-none text-muted hover:bg-night-700 hover:text-solar-ember"
+            className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-solar-ember"
           >
-            ⏻
+            <Icon name="logout" size={16} />
           </button>
         </div>
       )}

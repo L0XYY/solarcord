@@ -13,6 +13,7 @@ import {
 } from "@solarcord/shared";
 import { BadgeChip } from "./BadgeChip";
 import { ImageUpload } from "./ImageUpload";
+import { Icon } from "./Icon";
 import { api, ApiError, API_URL } from "@/lib/api";
 import { colorToHex, hexToInt, ROLE_SWATCHES, initials, displayName, formatTime } from "@/lib/ui";
 import type { AuditLogEntry, BanEntry, MemberView, Role } from "@/lib/types";
@@ -420,23 +421,23 @@ function MembersTab({
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   {canTimeout && (
-                    <button onClick={() => timeout(m)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-amber-400" title="Timeout">
-                      ⏱
+                    <button onClick={() => timeout(m)} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-amber-400" title="Timeout">
+                      <Icon name="clock" size={16} />
                     </button>
                   )}
                   {canKick && (
-                    <button onClick={() => kick(m)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-solar-ember" title="Kick">
-                      👢
+                    <button onClick={() => kick(m)} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-solar-ember" title="Kick">
+                      <Icon name="userMinus" size={16} />
                     </button>
                   )}
                   {canBan && (
-                    <button onClick={() => ban(m)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-solar-ember" title="Ban">
-                      ⛔
+                    <button onClick={() => ban(m)} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-solar-ember" title="Ban">
+                      <Icon name="ban" size={16} />
                     </button>
                   )}
                   {canKick && (
-                    <button onClick={() => setOpenMod(openMod === m.id ? null : m.id)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-amber-400" title="Warnings & notes">
-                      ⚠
+                    <button onClick={() => setOpenMod(openMod === m.id ? null : m.id)} className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-amber-400" title="Warnings & notes">
+                      <Icon name="warn" size={16} />
                     </button>
                   )}
                   {canManageRoles && (

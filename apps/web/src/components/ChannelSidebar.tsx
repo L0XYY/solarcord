@@ -5,18 +5,23 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
+import { Icon, type IconName } from "./Icon";
 import type { Channel, ServerDetail } from "@/lib/types";
 
-const typeGlyph: Record<string, string> = {
-  TEXT: "#",
-  ANNOUNCEMENT: "📣",
-  VOICE: "🔊",
-  VIDEO: "📹",
-  STAGE: "🎤",
-  FORUM: "🗂",
-  MEDIA: "🖼",
-  RULES: "📋",
-};
+function channelIcon(type: string): IconName {
+  switch (type) {
+    case "ANNOUNCEMENT":
+      return "megaphone";
+    case "VOICE":
+    case "VIDEO":
+    case "STAGE":
+      return "volume";
+    case "RULES":
+      return "book";
+    default:
+      return "hash";
+  }
+}
 
 export function ChannelSidebar({
   server,
@@ -75,28 +80,28 @@ export function ChannelSidebar({
           {server && (
             <button
               onClick={onInvite}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-solar"
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
               title="Invite people"
             >
-              ⤴
+              <Icon name="userPlus" size={16} />
             </button>
           )}
           {canManage && (
             <button
               onClick={onSettings}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-solar"
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
               title="Server settings"
             >
-              ⚙
+              <Icon name="settings" size={16} />
             </button>
           )}
           {canManage && (
             <button
               onClick={() => setCreating((v) => !v)}
-              className="grid h-7 w-7 place-items-center rounded-lg text-xl leading-none text-muted transition hover:bg-night-700 hover:text-solar"
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
               title="Create channel"
             >
-              +
+              <Icon name="plus" size={18} />
             </button>
           )}
         </div>
@@ -121,9 +126,9 @@ export function ChannelSidebar({
       <div className="flex-1 space-y-0.5 overflow-y-auto p-2">
         <button
           onClick={onShowWelcome}
-          className="mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-muted transition hover:bg-night-700/60 hover:text-solar"
+          className="mb-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm text-muted transition hover:bg-night-700/60 hover:text-ink"
         >
-          <span className="w-4 text-center">📖</span> Welcome
+          <Icon name="book" size={16} className="shrink-0" /> Welcome
         </button>
         <p className="px-2 pb-1 pt-2 text-[11px] font-bold uppercase tracking-wider text-muted">
           Channels
@@ -142,7 +147,7 @@ export function ChannelSidebar({
                 !selectable && "opacity-60",
               )}
             >
-              <span className="w-4 text-center text-muted">{typeGlyph[c.type] ?? "#"}</span>
+              <Icon name={channelIcon(c.type)} size={16} className="shrink-0 text-muted" />
               <span className="truncate">{c.name}</span>
             </button>
           );
@@ -169,16 +174,16 @@ export function ChannelSidebar({
           <button
             onClick={onOpenUserSettings}
             title="User settings"
-            className="rounded-lg px-2 py-1 leading-none text-muted hover:bg-night-700 hover:text-ink"
+            className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-ink"
           >
-            ⚙
+            <Icon name="settings" size={16} />
           </button>
           <button
             onClick={onLogout}
             title="Log out"
-            className="rounded-lg px-2 py-1 text-lg leading-none text-muted hover:bg-night-700 hover:text-solar-ember"
+            className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-night-700 hover:text-solar-ember"
           >
-            ⏻
+            <Icon name="logout" size={16} />
           </button>
         </div>
       )}
