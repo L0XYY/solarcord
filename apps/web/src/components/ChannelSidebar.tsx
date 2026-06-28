@@ -7,7 +7,27 @@ import { statusColor, statusLabel, displayName } from "@/lib/ui";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./Icon";
 import { ServerTag } from "./ServerTag";
+import { boostLevelFor, BOOST_TIERS } from "@solarcord/shared";
 import type { Channel, ServerDetail } from "@/lib/types";
+
+function BoostBar({ count }: { count: number }) {
+  const level = boostLevelFor(count);
+  const next = BOOST_TIERS.find((t) => count < t.required);
+  const pct = next ? Math.min(100, (count / next.required) * 100) : 100;
+  return (
+    <div className="border-b border-line/5 px-3 py-2">
+      <div className="flex items-center justify-between text-[11px]">
+        <span className="flex items-center gap-1 font-semibold text-pink-400">
+          <span className="inline-block h-2 w-2 rotate-45 rounded-[2px] bg-pink-400" /> Level {level}
+        </span>
+        <span className="text-muted">{next ? `${count}/${next.required} Boosts` : `${count} Boosts · Max`}</span>
+      </div>
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-night-600">
+        <div className="h-full rounded-full bg-gradient-to-r from-pink-400 to-fuchsia-500 transition-all" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
 
 function channelIcon(type: string): IconName {
   switch (type) {
@@ -75,43 +95,62 @@ export function ChannelSidebar({
     }
   }
 
+  const actions = (
+    <div className="flex items-center gap-1">
+      {server && (
+        <button
+          onClick={onInvite}
+          className="grid h-7 w-7 place-items-center rounded-lg bg-night-900/30 text-muted backdrop-blur transition hover:bg-night-700 hover:text-ink"
+          title="Invite people"
+        >
+          <Icon name="userPlus" size={16} />
+        </button>
+      )}
+      {canManage && (
+        <button
+          onClick={onSettings}
+          className="grid h-7 w-7 place-items-center rounded-lg bg-night-900/30 text-muted backdrop-blur transition hover:bg-night-700 hover:text-ink"
+          title="Server settings"
+        >
+          <Icon name="settings" size={16} />
+        </button>
+      )}
+      {canManage && (
+        <button
+          onClick={() => setCreating((v) => !v)}
+          className="grid h-7 w-7 place-items-center rounded-lg bg-night-900/30 text-muted backdrop-blur transition hover:bg-night-700 hover:text-ink"
+          title="Create channel"
+        >
+          <Icon name="plus" size={18} />
+        </button>
+      )}
+    </div>
+  );
+
   return (
     <aside className="flex h-full w-full flex-col border-r border-line/5 bg-night-800/50 md:w-60">
-      <header className="flex h-14 items-center justify-between gap-2 border-b border-line/5 px-4">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <h2 className="truncate font-bold">{server?.name ?? "—"}</h2>
-          {server?.tag && <ServerTag tag={server.tag} badge={server.tagBadge} />}
+      {server?.bannerUrl ? (
+        <div className="relative border-b border-line/5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={server.bannerUrl} alt="" className="h-28 w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-night-800 via-night-800/40 to-transparent" />
+          <div className="absolute right-2 top-2">{actions}</div>
+          <div className="absolute bottom-2 left-3 right-3 flex min-w-0 items-center gap-1.5">
+            <h2 className="truncate font-bold [text-shadow:0_1px_3px_rgba(0,0,0,.7)]">{server.name}</h2>
+            {server.tag && <ServerTag tag={server.tag} badge={server.tagBadge} />}
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          {server && (
-            <button
-              onClick={onInvite}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
-              title="Invite people"
-            >
-              <Icon name="userPlus" size={16} />
-            </button>
-          )}
-          {canManage && (
-            <button
-              onClick={onSettings}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
-              title="Server settings"
-            >
-              <Icon name="settings" size={16} />
-            </button>
-          )}
-          {canManage && (
-            <button
-              onClick={() => setCreating((v) => !v)}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink"
-              title="Create channel"
-            >
-              <Icon name="plus" size={18} />
-            </button>
-          )}
-        </div>
-      </header>
+      ) : (
+        <header className="flex h-14 items-center justify-between gap-2 border-b border-line/5 px-4">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <h2 className="truncate font-bold">{server?.name ?? "—"}</h2>
+            {server?.tag && <ServerTag tag={server.tag} badge={server.tagBadge} />}
+          </div>
+          {actions}
+        </header>
+      )}
+
+      {server && (server.boostCount > 0 || server.bannerUrl) && <BoostBar count={server.boostCount} />}
 
       {creating && (
         <form onSubmit={createChannel} className="border-b border-line/5 p-3">
