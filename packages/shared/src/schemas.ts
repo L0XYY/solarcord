@@ -34,6 +34,8 @@ export const updateMeSchema = z.object({
   bannerUrl: imageRef.nullable().optional(),
   customStatus: z.string().max(128).nullable().optional(),
   status: z.enum(["ONLINE", "IDLE", "DND", "INVISIBLE"]).optional(),
+  themePrimary: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
+  themeAccent: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional(),
 });
 
 // ── Servers ──

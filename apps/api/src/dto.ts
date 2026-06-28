@@ -92,6 +92,8 @@ export function toSelfUser(u: {
   pronouns: string | null;
   status: string;
   customStatus: string | null;
+  themePrimary: string | null;
+  themeAccent: string | null;
   isStaff: boolean;
 }) {
   return {
@@ -105,6 +107,8 @@ export function toSelfUser(u: {
     pronouns: u.pronouns,
     status: u.status,
     customStatus: u.customStatus,
+    themePrimary: u.themePrimary,
+    themeAccent: u.themeAccent,
     isStaff: u.isStaff,
   };
 }

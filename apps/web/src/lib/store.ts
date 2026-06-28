@@ -12,6 +12,8 @@ export interface SelfUser {
   pronouns: string | null;
   status: string;
   customStatus: string | null;
+  themePrimary: string | null;
+  themeAccent: string | null;
   isStaff: boolean;
 }
 

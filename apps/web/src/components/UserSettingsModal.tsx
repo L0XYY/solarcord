@@ -3,10 +3,10 @@ import { useState } from "react";
 import clsx from "clsx";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, type SelfUser } from "@/lib/store";
-import { displayName, statusColor, statusLabel } from "@/lib/ui";
+import { statusColor } from "@/lib/ui";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
-import { Avatar } from "./Avatar";
 import { ImageUpload } from "./ImageUpload";
+import { ProfileCardView, type ProfileViewData } from "./ProfileCard";
 
 type Tab = "profile" | "appearance";
 
@@ -68,6 +68,8 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
     avatarUrl: user.avatarUrl ?? "",
     bannerUrl: user.bannerUrl ?? "",
     status: user.status,
+    themePrimary: user.themePrimary ?? "",
+    themeAccent: user.themeAccent ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -88,6 +90,8 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
           avatarUrl: form.avatarUrl || null,
           bannerUrl: form.bannerUrl || null,
           status: form.status,
+          themePrimary: form.themePrimary || null,
+          themeAccent: form.themeAccent || null,
         },
       });
       onSaved(updated);
@@ -99,21 +103,24 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
     }
   }
 
-  return (
-    <div>
-      {/* Banner + avatar preview */}
-      <div className="h-24 bg-night-700" style={form.bannerUrl ? { backgroundImage: `url(${form.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} />
-      <div className="px-6 pb-6">
-        <div className="-mt-8 mb-3 flex items-end gap-3">
-          <div className="rounded-2xl border-4 border-night-800">
-            <Avatar name={displayName(user)} src={form.avatarUrl || null} size={56} rounded="xl" />
-          </div>
-          <div className="pb-1">
-            <p className="font-bold">{form.displayName || user.username}</p>
-            <p className="text-xs text-muted">@{user.username}</p>
-          </div>
-        </div>
+  const preview: ProfileViewData = {
+    username: user.username,
+    displayName: form.displayName || null,
+    avatarUrl: form.avatarUrl || null,
+    bannerUrl: form.bannerUrl || null,
+    bio: form.bio || null,
+    pronouns: form.pronouns || null,
+    status: form.status,
+    isStaff: user.isStaff,
+    themePrimary: form.themePrimary || null,
+    themeAccent: form.themeAccent || null,
+    badges: [],
+  };
 
+  return (
+    <div className="grid gap-6 p-6 lg:grid-cols-[1fr_300px]">
+      {/* Editor */}
+      <div>
         <Field label="Display name">
           <input className="field" value={form.displayName} onChange={(e) => set("displayName", e.target.value)} placeholder={user.username} />
         </Field>
@@ -130,26 +137,27 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Avatar">
-            <ImageUpload
-              value={form.avatarUrl || null}
-              shape="circle"
-              maxW={256}
-              maxH={256}
-              label="Upload avatar"
-              onChange={(v) => set("avatarUrl", v ?? "")}
-            />
+            <ImageUpload value={form.avatarUrl || null} shape="circle" maxW={256} maxH={256} label="Upload avatar" onChange={(v) => set("avatarUrl", v ?? "")} />
           </Field>
           <Field label="Banner">
-            <ImageUpload
-              value={form.bannerUrl || null}
-              shape="wide"
-              maxW={1024}
-              maxH={400}
-              label="Upload banner"
-              onChange={(v) => set("bannerUrl", v ?? "")}
-            />
+            <ImageUpload value={form.bannerUrl || null} shape="wide" maxW={1024} maxH={400} label="Upload banner" onChange={(v) => set("bannerUrl", v ?? "")} />
           </Field>
         </div>
+
+        <Field label="Profile theme">
+          <div className="flex gap-4">
+            <ColorField label="Primary" value={form.themePrimary} onChange={(v) => set("themePrimary", v)} />
+            <ColorField label="Accent" value={form.themeAccent} onChange={(v) => set("themeAccent", v)} />
+            {(form.themePrimary || form.themeAccent) && (
+              <button
+                onClick={() => setForm((f) => ({ ...f, themePrimary: "", themeAccent: "" }))}
+                className="self-end text-xs text-muted hover:text-solar-ember"
+              >
+                Reset theme
+              </button>
+            )}
+          </div>
+        </Field>
 
         <Field label="Status">
           <div className="flex flex-wrap gap-2">
@@ -176,6 +184,26 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
           {msg && <span className={clsx("text-sm", msg.ok ? "text-emerald-400" : "text-solar-ember")}>{msg.text}</span>}
         </div>
       </div>
+
+      {/* Live preview */}
+      <div>
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted">Preview</p>
+        <ProfileCardView data={preview} />
+      </div>
+    </div>
+  );
+}
+
+function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <span className="mb-1 block text-xs text-muted">{label}</span>
+      <input
+        type="color"
+        value={value || "#5865f2"}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-10 w-14 cursor-pointer rounded-lg border border-line/15 bg-transparent"
+      />
     </div>
   );
 }
