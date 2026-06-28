@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
-import { api, bootstrapSession } from "@/lib/api";
+import { api, ApiError, bootstrapSession } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { initials, displayName } from "@/lib/ui";
 import { BadgeChip } from "@/components/BadgeChip";
+import { ImageUpload } from "@/components/ImageUpload";
 import { SERVER_BADGE_INFO, type ServerBadgeType } from "@solarcord/shared";
 
 type Tab = "overview" | "users" | "servers" | "badges" | "reports";
@@ -261,7 +262,8 @@ function Badges() {
 
   return (
     <div>
-      <h1 className="text-2xl font-extrabold">Badge Applications</h1>
+      <CustomBadges />
+      <h1 className="mt-10 text-2xl font-extrabold">Badge Applications</h1>
       <p className="mt-1 text-sm text-muted">Review verified, partner and safe-community requests.</p>
       {apps.length === 0 ? (
         <p className="mt-6 text-sm text-muted">No pending applications. 🎉</p>
@@ -295,6 +297,94 @@ function Badges() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+interface CustomBadge {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  iconUrl: string | null;
+  holders: number;
+}
+
+function CustomBadges() {
+  const [badges, setBadges] = useState<CustomBadge[]>([]);
+  const [form, setForm] = useState({ key: "", name: "", description: "", iconUrl: null as string | null });
+  const [grant, setGrant] = useState<Record<string, string>>({});
+  const [err, setErr] = useState<string | null>(null);
+
+  const load = () => api<{ badges: CustomBadge[] }>("/admin/badges").then((r) => setBadges(r.badges));
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function create() {
+    setErr(null);
+    try {
+      await api("/admin/badges", { method: "POST", json: { key: form.key, name: form.name, description: form.description || undefined, iconUrl: form.iconUrl || undefined } });
+      setForm({ key: "", name: "", description: "", iconUrl: null });
+      await load();
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.message : "Failed to create");
+    }
+  }
+  async function doGrant(id: string) {
+    const username = grant[id]?.trim();
+    if (!username) return;
+    await api(`/admin/badges/${id}/grant`, { method: "POST", json: { username } }).catch(() => {});
+    setGrant((g) => ({ ...g, [id]: "" }));
+    await load();
+  }
+
+  return (
+    <div>
+      <h1 className="text-2xl font-extrabold">Custom badges</h1>
+      <p className="mt-1 text-sm text-muted">Create badges and grant them to members. They show on profiles.</p>
+
+      <div className="mt-4 rounded-2xl glass p-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input className="field" placeholder="key (e.g. founder)" value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} />
+          <input className="field" placeholder="Display name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        </div>
+        <input className="field mt-3" placeholder="Description (optional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+        <div className="mt-3 flex items-center justify-between gap-3">
+          <ImageUpload value={form.iconUrl} shape="square" maxW={64} maxH={64} format="image/png" label="Badge icon" onChange={(v) => setForm({ ...form, iconUrl: v })} />
+          <button onClick={create} disabled={form.key.length < 2 || form.name.length < 2} className="btn-solar text-sm">
+            Create badge
+          </button>
+        </div>
+        {err && <p className="mt-2 text-sm text-solar-ember">{err}</p>}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {badges.map((b) => (
+          <div key={b.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
+            {b.iconUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={b.iconUrl} alt="" className="h-8 w-8 rounded" />
+            ) : (
+              <div className="grid h-8 w-8 place-items-center rounded bg-night-700 text-xs">★</div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{b.name}</p>
+              <p className="truncate text-xs text-muted">{b.holders} holders · {b.key}</p>
+            </div>
+            <input
+              className="field max-w-[160px] py-1.5 text-sm"
+              placeholder="grant to @username"
+              value={grant[b.id] ?? ""}
+              onChange={(e) => setGrant((g) => ({ ...g, [b.id]: e.target.value }))}
+              onKeyDown={(e) => e.key === "Enter" && doGrant(b.id)}
+            />
+            <button onClick={() => doGrant(b.id)} className="btn-ghost py-1.5 text-xs">
+              Grant
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

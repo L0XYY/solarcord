@@ -12,6 +12,7 @@ import {
   type ServerBadgeType,
 } from "@solarcord/shared";
 import { BadgeChip } from "./BadgeChip";
+import { ImageUpload } from "./ImageUpload";
 import { api, ApiError, API_URL } from "@/lib/api";
 import { colorToHex, hexToInt, ROLE_SWATCHES, initials, displayName, formatTime } from "@/lib/ui";
 import type { AuditLogEntry, BanEntry, MemberView, Role } from "@/lib/types";
@@ -119,6 +120,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
   const [name, setName] = useState("");
   const [color, setColor] = useState(0);
   const [perms, setPerms] = useState("0");
+  const [icon, setIcon] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,11 +135,13 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
       setName(selected.name);
       setColor(selected.color);
       setPerms(selected.permissions);
+      setIcon(selected.iconUrl);
       setError(null);
     }
   }, [selected]);
 
-  const dirty = selected && (name !== selected.name || color !== selected.color || perms !== selected.permissions);
+  const dirty =
+    selected && (name !== selected.name || color !== selected.color || perms !== selected.permissions || icon !== selected.iconUrl);
 
   function togglePerm(key: PermissionKey) {
     const bit = Permission[key];
@@ -165,7 +169,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
     setSaving(true);
     setError(null);
     try {
-      await api(`/roles/${selected.id}`, { method: "PATCH", json: { name, color, permissions: perms } });
+      await api(`/roles/${selected.id}`, { method: "PATCH", json: { name, color, permissions: perms, iconUrl: icon } });
       await onReload();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Failed to save");
@@ -206,7 +210,12 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
                 r.id === selectedId ? "bg-night-700/70 text-ink" : "text-muted hover:bg-night-700/40 hover:text-ink",
               )}
             >
-              <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: colorToHex(r.color) }} />
+              {r.iconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={r.iconUrl} alt="" className="h-4 w-4 shrink-0 rounded" />
+              ) : (
+                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: colorToHex(r.color) }} />
+              )}
               <span className="truncate">{r.name}</span>
             </button>
           ))}
@@ -256,6 +265,13 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
               </div>
             </div>
 
+            <div className="mt-4">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-muted">Role icon</label>
+              <div className="mt-2">
+                <ImageUpload value={icon} shape="square" maxW={64} maxH={64} format="image/png" label="Upload icon" onChange={setIcon} />
+              </div>
+            </div>
+
             <div className="mt-6">
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted">Permissions</label>
               <div className="mt-2 space-y-5">
@@ -293,6 +309,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
                 setName(selected.name);
                 setColor(selected.color);
                 setPerms(selected.permissions);
+                setIcon(selected.iconUrl);
               }
             }}
             className="btn-ghost py-1.5 text-sm"
@@ -390,7 +407,12 @@ function MembersTab({
                         className="flex items-center gap-1 rounded-full bg-night-700/70 px-2 py-0.5 text-xs"
                         style={{ color: colorToHex(r.color) }}
                       >
-                        <span className="h-2 w-2 rounded-full" style={{ background: colorToHex(r.color) }} />
+                        {r.iconUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={r.iconUrl} alt="" className="h-3 w-3 rounded" />
+                        ) : (
+                          <span className="h-2 w-2 rounded-full" style={{ background: colorToHex(r.color) }} />
+                        )}
                         {r.name}
                       </span>
                     ))}

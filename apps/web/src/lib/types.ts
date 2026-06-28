@@ -20,6 +20,7 @@ export interface Role {
   color: number;
   position: number;
   permissions: string;
+  iconUrl: string | null;
   isEveryone: boolean;
   isHoisted: boolean;
   mentionable: boolean;

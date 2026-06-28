@@ -3,7 +3,8 @@ import clsx from "clsx";
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/store";
-import { statusColor, statusLabel, displayName, initials } from "@/lib/ui";
+import { statusColor, statusLabel, displayName } from "@/lib/ui";
+import { Avatar } from "./Avatar";
 import type { Channel, ServerDetail } from "@/lib/types";
 
 const typeGlyph: Record<string, string> = {
@@ -152,9 +153,7 @@ export function ChannelSidebar({
       {user && (
         <div className="flex items-center gap-2 border-t border-line/5 bg-night-900/60 px-2 py-2">
           <div className="relative">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-aurora to-solar-glow text-xs font-bold text-night-900">
-              {initials(displayName(user))}
-            </div>
+            <Avatar name={displayName(user)} src={user.avatarUrl} size={36} />
             <span
               className={clsx(
                 "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-night-900",

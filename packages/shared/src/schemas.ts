@@ -19,13 +19,19 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+// An image reference: an http(s) URL, or an inline data URL from a device upload.
+export const imageRef = z
+  .string()
+  .max(6_000_000)
+  .refine((v) => v.startsWith("data:image/") || /^https?:\/\//i.test(v), { message: "Must be an image" });
+
 // ── User profile ──
 export const updateMeSchema = z.object({
   displayName: z.string().min(1).max(64).nullable().optional(),
   bio: z.string().max(300).nullable().optional(),
   pronouns: z.string().max(40).nullable().optional(),
-  avatarUrl: z.string().url().nullable().optional(),
-  bannerUrl: z.string().url().nullable().optional(),
+  avatarUrl: imageRef.nullable().optional(),
+  bannerUrl: imageRef.nullable().optional(),
   customStatus: z.string().max(128).nullable().optional(),
   status: z.enum(["ONLINE", "IDLE", "DND", "INVISIBLE"]).optional(),
 });
@@ -129,8 +135,21 @@ export const updateRoleSchema = z.object({
   name: z.string().min(1).max(32).optional(),
   color: z.number().int().min(0).max(0xffffff).optional(),
   permissions: permissionBits.optional(),
+  iconUrl: imageRef.nullable().optional(),
   hoisted: z.boolean().optional(),
   mentionable: z.boolean().optional(),
+});
+
+// ── Custom user badges (admin) ──
+export const createUserBadgeSchema = z.object({
+  key: z.string().min(2).max(40).regex(/^[a-z0-9_]+$/, "Lowercase letters, numbers, underscore"),
+  name: z.string().min(2).max(48),
+  description: z.string().max(160).optional(),
+  iconUrl: imageRef.optional(),
+});
+
+export const grantBadgeSchema = z.object({
+  username: z.string().min(2).max(32),
 });
 
 // ── Friends ──

@@ -8,14 +8,22 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen place-items-center px-6">
-      <div className="w-full max-w-md animate-fade-up">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-2xl bg-gradient-to-br from-solar to-solar-glow shadow-glow" />
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="mt-1 text-sm text-muted">{subtitle}</p>
+    <main className="relative grid min-h-screen place-items-center overflow-hidden px-6">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{ background: "radial-gradient(600px 320px at 50% -10%, rgb(var(--line) / 0.06), transparent 70%)" }}
+      />
+      <div className="relative w-full max-w-[400px] animate-fade-up">
+        <div className="mb-7 flex flex-col items-center text-center">
+          <div className="mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-solar text-2xl font-black text-night-900 shadow-glass">
+            S
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <p className="mt-1.5 text-sm text-muted">{subtitle}</p>
         </div>
-        <div className="glass-strong rounded-2xl p-6 shadow-glass">{children}</div>
+        <div className="glass-strong rounded-3xl p-7 shadow-glass">{children}</div>
+        <p className="mt-6 text-center text-xs text-muted">SolarCord — your community, brought to light</p>
       </div>
     </main>
   );

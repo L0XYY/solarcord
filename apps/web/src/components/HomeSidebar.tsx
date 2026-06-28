@@ -3,6 +3,7 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useAuth } from "@/lib/store";
 import { initials, statusColor, statusLabel, displayName } from "@/lib/ui";
+import { Avatar } from "./Avatar";
 import type { ConversationSummary } from "@/lib/types";
 
 export function conversationName(c: ConversationSummary): string {
@@ -110,9 +111,7 @@ export function HomeSidebar({
       {user && (
         <div className="flex items-center gap-2 border-t border-line/5 bg-night-900/60 px-2 py-2">
           <div className="relative">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-aurora to-solar-glow text-xs font-bold text-night-900">
-              {initials(displayName(user))}
-            </div>
+            <Avatar name={displayName(user)} src={user.avatarUrl} size={36} />
             <span
               className={clsx("absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-night-900", statusColor(user.status))}
               title={statusLabel(user.status)}

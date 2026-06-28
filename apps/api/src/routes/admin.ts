@@ -6,6 +6,8 @@ import {
   resolveReportSchema,
   verifyServerSchema,
   serverBadgeTypeSchema,
+  createUserBadgeSchema,
+  grantBadgeSchema,
 } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
@@ -173,6 +175,57 @@ export async function adminRoutes(app: FastifyInstance) {
     if (!report) throw Errors.notFound("Report not found");
     await prisma.report.update({ where: { id }, data: { status: body.status } });
     return { ok: true };
+  });
+
+  // ── Custom user badges ──
+  app.get("/admin/badges", async () => {
+    const badges = await prisma.userBadge.findMany({
+      include: { _count: { select: { holders: true } } },
+      orderBy: { name: "asc" },
+    });
+    return {
+      badges: badges.map((b) => ({
+        id: b.id,
+        key: b.key,
+        name: b.name,
+        description: b.description,
+        iconUrl: b.iconUrl,
+        holders: b._count.holders,
+      })),
+    };
+  });
+
+  app.post("/admin/badges", async (req, reply) => {
+    const body = createUserBadgeSchema.parse(req.body);
+    const clash = await prisma.userBadge.findUnique({ where: { key: body.key }, select: { id: true } });
+    if (clash) throw Errors.conflict("A badge with that key already exists");
+    const badge = await prisma.userBadge.create({
+      data: { key: body.key, name: body.name, description: body.description ?? "", iconUrl: body.iconUrl },
+    });
+    return reply.code(201).send({ badge: { id: badge.id, key: badge.key, name: badge.name } });
+  });
+
+  app.post("/admin/badges/:id/grant", async (req) => {
+    const { id } = req.params as { id: string };
+    const { username } = grantBadgeSchema.parse(req.body);
+    const [badge, user] = await Promise.all([
+      prisma.userBadge.findUnique({ where: { id }, select: { id: true } }),
+      prisma.user.findUnique({ where: { username }, select: { id: true } }),
+    ]);
+    if (!badge) throw Errors.notFound("Badge not found");
+    if (!user) throw Errors.notFound("No user with that username");
+    await prisma.userBadgeLink.upsert({
+      where: { userId_badgeId: { userId: user.id, badgeId: id } },
+      update: {},
+      create: { userId: user.id, badgeId: id },
+    });
+    return { ok: true };
+  });
+
+  app.delete("/admin/badges/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    await prisma.userBadge.delete({ where: { id } }).catch(() => {});
+    return reply.code(204).send();
   });
 }
 

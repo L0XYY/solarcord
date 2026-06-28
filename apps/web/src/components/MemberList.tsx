@@ -1,6 +1,7 @@
 "use client";
 import clsx from "clsx";
-import { initials, statusColor, displayName } from "@/lib/ui";
+import { statusColor, displayName } from "@/lib/ui";
+import { Avatar } from "./Avatar";
 import type { MemberView } from "@/lib/types";
 
 export function MemberList({ members, onSelectUser }: { members: MemberView[]; onSelectUser?: (userId: string) => void }) {
@@ -40,9 +41,7 @@ function Section({
             )}
           >
             <div className="relative">
-              <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-night-600 to-night-700 text-[11px] font-bold">
-                {initials(displayName(m.user))}
-              </div>
+              <Avatar name={displayName(m.user)} src={m.user.avatarUrl} size={32} />
               <span
                 className={clsx(
                   "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-night-800",

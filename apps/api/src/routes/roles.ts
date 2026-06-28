@@ -70,6 +70,7 @@ export async function roleRoutes(app: FastifyInstance) {
         name: body.name,
         color: body.color,
         permissions: body.permissions,
+        iconUrl: body.iconUrl,
         isHoisted: body.hoisted,
         mentionable: body.mentionable,
       },

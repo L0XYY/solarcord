@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { initials, displayName, formatTime } from "@/lib/ui";
+import { Avatar } from "./Avatar";
 import type { Channel, Message } from "@/lib/types";
 
 const QUICK_EMOJI = ["👍", "❤️", "😂", "🎉", "🔥", "😮", "😢", "👀"];
@@ -150,11 +151,7 @@ export function ChatPanel({
               )}
 
               <div className={clsx("w-10 shrink-0", m.replyTo && "pt-5")}>
-                {(!grouped || m.replyTo) && (
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-aurora to-solar-glow text-xs font-bold text-night-900">
-                    {initials(displayName(m.author))}
-                  </div>
-                )}
+                {(!grouped || m.replyTo) && <Avatar name={displayName(m.author)} src={m.author.avatarUrl} size={40} />}
               </div>
 
               <div className={clsx("min-w-0 flex-1", m.replyTo && "pt-5")}>

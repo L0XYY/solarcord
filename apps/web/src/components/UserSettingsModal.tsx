@@ -3,8 +3,10 @@ import { useState } from "react";
 import clsx from "clsx";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, type SelfUser } from "@/lib/store";
-import { initials, displayName, statusColor, statusLabel } from "@/lib/ui";
+import { displayName, statusColor, statusLabel } from "@/lib/ui";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
+import { Avatar } from "./Avatar";
+import { ImageUpload } from "./ImageUpload";
 
 type Tab = "profile" | "appearance";
 
@@ -103,13 +105,8 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
       <div className="h-24 bg-night-700" style={form.bannerUrl ? { backgroundImage: `url(${form.bannerUrl})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} />
       <div className="px-6 pb-6">
         <div className="-mt-8 mb-3 flex items-end gap-3">
-          <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-2xl border-4 border-night-800 bg-night-600 text-lg font-bold">
-            {form.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={form.avatarUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              initials(displayName(user))
-            )}
+          <div className="rounded-2xl border-4 border-night-800">
+            <Avatar name={displayName(user)} src={form.avatarUrl || null} size={56} rounded="xl" />
           </div>
           <div className="pb-1">
             <p className="font-bold">{form.displayName || user.username}</p>
@@ -132,11 +129,25 @@ function ProfileTab({ user, accessToken, onSaved }: { user: SelfUser; accessToke
           <textarea className="field" rows={3} value={form.bio} onChange={(e) => set("bio", e.target.value)} placeholder="Tell people about yourself…" />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Avatar URL">
-            <input className="field" value={form.avatarUrl} onChange={(e) => set("avatarUrl", e.target.value)} placeholder="https://…" />
+          <Field label="Avatar">
+            <ImageUpload
+              value={form.avatarUrl || null}
+              shape="circle"
+              maxW={256}
+              maxH={256}
+              label="Upload avatar"
+              onChange={(v) => set("avatarUrl", v ?? "")}
+            />
           </Field>
-          <Field label="Banner URL">
-            <input className="field" value={form.bannerUrl} onChange={(e) => set("bannerUrl", e.target.value)} placeholder="https://…" />
+          <Field label="Banner">
+            <ImageUpload
+              value={form.bannerUrl || null}
+              shape="wide"
+              maxW={1024}
+              maxH={400}
+              label="Upload banner"
+              onChange={(v) => set("bannerUrl", v ?? "")}
+            />
           </Field>
         </div>
 

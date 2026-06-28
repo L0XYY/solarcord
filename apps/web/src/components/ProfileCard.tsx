@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { api } from "@/lib/api";
-import { initials, statusColor, statusLabel } from "@/lib/ui";
+import { statusColor, statusLabel } from "@/lib/ui";
+import { Avatar } from "./Avatar";
 
 interface Profile {
   id: string;
@@ -34,13 +35,8 @@ export function ProfileCard({ userId, onClose }: { userId: string; onClose: () =
         <div className="px-5 pb-5">
           <div className="-mt-9 flex items-end justify-between">
             <div className="relative">
-              <div className="grid h-16 w-16 place-items-center overflow-hidden rounded-2xl border-4 border-night-800 bg-night-600 text-lg font-bold">
-                {p?.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  initials(name || "?")
-                )}
+              <div className="rounded-2xl border-4 border-night-800">
+                <Avatar name={name || "?"} src={p?.avatarUrl} size={56} rounded="xl" />
               </div>
               {p && (
                 <span className={clsx("absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-4 border-night-800", statusColor(p.status))} title={statusLabel(p.status)} />
