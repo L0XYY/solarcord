@@ -21,6 +21,7 @@ async function main() {
     { key: "active_developer", name: "Active Developer", description: "Maintains an active app" },
     { key: "moderator", name: "Moderator", description: "Trusted community moderator" },
     { key: "verified", name: "Verified", description: "A verified account" },
+    { key: "owner", name: "Owner", description: "Founder of SolarCord" },
   ];
   for (const b of platformBadges) {
     await prisma.userBadge.upsert({ where: { key: b.key }, update: {}, create: b });
@@ -54,14 +55,16 @@ async function main() {
     },
   });
 
-  // Give the owner a Staff badge.
-  const staffBadge = await prisma.userBadge.findUnique({ where: { key: "staff" }, select: { id: true } });
-  if (staffBadge) {
-    await prisma.userBadgeLink.upsert({
-      where: { userId_badgeId: { userId: loxy.id, badgeId: staffBadge.id } },
-      update: {},
-      create: { userId: loxy.id, badgeId: staffBadge.id },
-    });
+  // Loxy's badges — the Owner crown is exclusive to this account.
+  for (const key of ["owner", "staff", "early_supporter", "verified"]) {
+    const badge = await prisma.userBadge.findUnique({ where: { key }, select: { id: true } });
+    if (badge) {
+      await prisma.userBadgeLink.upsert({
+        where: { userId_badgeId: { userId: loxy.id, badgeId: badge.id } },
+        update: {},
+        create: { userId: loxy.id, badgeId: badge.id },
+      });
+    }
   }
 
   console.log("Done. Owner login → loxy@solarcord.app / loxy12345");

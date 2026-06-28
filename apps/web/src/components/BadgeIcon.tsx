@@ -13,8 +13,22 @@ interface IconDef {
   svg?: React.ReactNode;
 }
 
+const toolsSvg = (
+  <>
+    {tile("#5b63e8", "#cfd2fb")}
+    <g transform="rotate(45 24 24)">
+      <rect x="22.4" y="11" width="3.2" height="13" rx="1.6" fill="#5b63e8" />
+      <rect x="22.7" y="24" width="2.6" height="10" rx="1" fill="#5b63e8" />
+    </g>
+    <g transform="rotate(-45 24 24)">
+      <rect x="22.4" y="21" width="3.2" height="15" rx="1.6" fill="#5b63e8" />
+      <path d="M17.5 12h13l-2.2 5.5h-8.6z" fill="#5b63e8" />
+    </g>
+  </>
+);
+
 const ICONS: Record<string, IconDef> = {
-  staff: { label: "SolarCord Staff", img: "/badges/owner.png" },
+  staff: { label: "SolarCord Staff", svg: toolsSvg },
   owner: { label: "Owner", img: "/badges/owner.png" },
   early_supporter: { label: "Early Supporter", img: "/badges/booster.png" },
   booster: { label: "Server Booster", img: "/badges/booster.png" },
@@ -25,22 +39,7 @@ const ICONS: Record<string, IconDef> = {
   verifiedserver: { label: "Verified Server", img: "/badges/verifiedserver.png" },
 
   // Keys without supplied art — small SVG tiles.
-  active_developer: {
-    label: "Active Developer",
-    svg: (
-      <>
-        {tile("#5b63e8", "#cfd2fb")}
-        <g transform="rotate(45 24 24)">
-          <rect x="22.4" y="11" width="3.2" height="13" rx="1.6" fill="#5b63e8" />
-          <rect x="22.7" y="24" width="2.6" height="10" rx="1" fill="#5b63e8" />
-        </g>
-        <g transform="rotate(-45 24 24)">
-          <rect x="22.4" y="21" width="3.2" height="15" rx="1.6" fill="#5b63e8" />
-          <path d="M17.5 12h13l-2.2 5.5h-8.6z" fill="#5b63e8" />
-        </g>
-      </>
-    ),
-  },
+  active_developer: { label: "Active Developer", svg: toolsSvg },
   moderator: {
     label: "Moderator",
     svg: (
