@@ -66,6 +66,8 @@ export interface ServerToClientEvents {
   "voice:signal": (data: { from: string; signal: unknown }) => void;
   "voice:state": (data: { roomId: string; userId: string; muted: boolean; deafened: boolean }) => void;
   "voice:incoming": (data: { conversationId: string; from: VoicePeer }) => void;
+  // Broadcast to a whole server so everyone sees who is in each voice channel.
+  "voice:channel-update": (data: { channelId: string; users: VoicePeer[] }) => void;
   error: (data: { code: string; message: string }) => void;
 }
 
@@ -85,6 +87,7 @@ export interface ClientToServerEvents {
   "voice:signal": (data: { to: string; signal: unknown }) => void;
   "voice:state": (data: { roomId: string; muted: boolean; deafened: boolean }) => void;
   "voice:call": (data: { conversationId: string }) => void;
+  "voice:sync": (data: { serverId: string }) => void;
 }
 
 export interface VoicePeer {

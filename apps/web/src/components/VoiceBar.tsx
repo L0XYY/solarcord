@@ -1,6 +1,6 @@
 "use client";
 import clsx from "clsx";
-import { useVoice, toggleMute, toggleDeafen, leaveVoice } from "@/lib/voice";
+import { useVoice, toggleMute, toggleDeafen, leaveVoice, toggleCamera, toggleScreenShare } from "@/lib/voice";
 import { useAuth } from "@/lib/store";
 import { displayName } from "@/lib/ui";
 import { Icon } from "./Icon";
@@ -47,26 +47,43 @@ export function VoiceBar() {
       </div>
 
       <div className="mt-2 flex gap-1 px-1">
-        <button
-          onClick={toggleMute}
-          className={clsx(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium",
-            v.muted ? "bg-solar-ember/15 text-solar-ember" : "bg-night-700/60 text-muted hover:text-ink",
-          )}
-        >
-          <Icon name="mic" size={15} /> {v.muted ? "Muted" : "Mute"}
-        </button>
-        <button
-          onClick={toggleDeafen}
-          className={clsx(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-medium",
-            v.deafened ? "bg-solar-ember/15 text-solar-ember" : "bg-night-700/60 text-muted hover:text-ink",
-          )}
-        >
-          <Icon name="headphones" size={15} /> {v.deafened ? "Deafened" : "Deafen"}
-        </button>
+        <Ctl active={v.muted} danger onClick={toggleMute} icon="mic" title={v.muted ? "Unmute" : "Mute"} />
+        <Ctl active={v.deafened} danger onClick={toggleDeafen} icon="headphones" title={v.deafened ? "Undeafen" : "Deafen"} />
+        <Ctl active={v.cameraOn} onClick={toggleCamera} icon="video" title={v.cameraOn ? "Stop camera" : "Camera"} />
+        <Ctl active={v.screenOn} onClick={toggleScreenShare} icon="monitor" title={v.screenOn ? "Stop sharing" : "Share screen"} />
       </div>
     </div>
+  );
+}
+
+function Ctl({
+  active,
+  danger,
+  onClick,
+  icon,
+  title,
+}: {
+  active: boolean;
+  danger?: boolean;
+  onClick: () => void;
+  icon: Parameters<typeof Icon>[0]["name"];
+  title: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={clsx(
+        "grid h-8 flex-1 place-items-center rounded-lg transition",
+        active
+          ? danger
+            ? "bg-solar-ember/15 text-solar-ember"
+            : "bg-emerald-500/15 text-emerald-400"
+          : "bg-night-700/60 text-muted hover:text-ink",
+      )}
+    >
+      <Icon name={icon} size={16} />
+    </button>
   );
 }
 

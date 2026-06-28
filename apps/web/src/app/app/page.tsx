@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { api, bootstrapSession } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { connectSocket, disconnectSocket, type AppSocket } from "@/lib/socket";
-import { joinVoice, ringDM } from "@/lib/voice";
+import { joinVoice, ringDM, setChannelOccupants } from "@/lib/voice";
 import { displayName } from "@/lib/ui";
 import { ServerDock } from "@/components/ServerDock";
 import { ChannelSidebar } from "@/components/ChannelSidebar";
@@ -20,6 +20,7 @@ import { DiscoveryPage } from "@/components/DiscoveryPage";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { UserSettingsModal } from "@/components/UserSettingsModal";
 import { ProfileCard } from "@/components/ProfileCard";
+import { VideoStage } from "@/components/VideoStage";
 import { has, Permission, type ChannelSummary } from "@solarcord/shared";
 import type {
   Channel,
@@ -192,6 +193,9 @@ export default function AppPage() {
     const onIncomingCall = (d: { conversationId: string; from: { username: string; displayName: string | null } }) => {
       setIncomingCall({ conversationId: d.conversationId, fromName: d.from.displayName ?? d.from.username });
     };
+    const onVoiceChannelUpdate = (d: { channelId: string; users: Parameters<typeof setChannelOccupants>[1] }) => {
+      setChannelOccupants(d.channelId, d.users);
+    };
 
     socket.on("message:create", onMessage);
     socket.on("message:update", onMessageUpdate);
@@ -205,6 +209,7 @@ export default function AppPage() {
     socket.on("friend:update", onFriendUpdate);
     socket.on("conversation:new", onConversationNew);
     socket.on("voice:incoming", onIncomingCall);
+    socket.on("voice:channel-update", onVoiceChannelUpdate);
 
     return () => {
       socket.off("message:create", onMessage);
@@ -219,6 +224,7 @@ export default function AppPage() {
       socket.off("friend:update", onFriendUpdate);
       socket.off("conversation:new", onConversationNew);
       socket.off("voice:incoming", onIncomingCall);
+      socket.off("voice:channel-update", onVoiceChannelUpdate);
     };
   }, [ready, user, refetchFriends, refetchConversations]);
 
@@ -247,6 +253,7 @@ export default function AppPage() {
       setDetail(server);
       setMembers(mlist);
       setChannel(server.channels.find((c) => c.type === "TEXT" || c.type === "ANNOUNCEMENT") ?? null);
+      socketRef.current?.emit("voice:sync", { serverId: activeServerId });
     })();
     return () => {
       cancelled = true;
@@ -430,6 +437,7 @@ export default function AppPage() {
 
   return (
     <main className="flex h-screen overflow-hidden">
+      <VideoStage />
       <ServerDock
         servers={servers}
         activeId={view === "server" ? activeServerId : null}

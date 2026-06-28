@@ -17,6 +17,10 @@ interface VoiceState {
   muted: boolean;
   deafened: boolean;
   selfSpeaking: boolean;
+  cameraOn: boolean;
+  screenOn: boolean;
+  videoTick: number;
+  channelOccupants: Record<string, VoicePeer[]>; // who's in each voice channel (server-wide)
   connecting: boolean;
   error: string | null;
 }
@@ -29,18 +33,43 @@ export const useVoice = create<VoiceState>(() => ({
   muted: false,
   deafened: false,
   selfSpeaking: false,
+  cameraOn: false,
+  screenOn: false,
+  videoTick: 0,
+  channelOccupants: {},
   connecting: false,
   error: null,
 }));
 
+export function setChannelOccupants(channelId: string, users: VoicePeer[]) {
+  useVoice.setState((s) => ({ channelOccupants: { ...s.channelOccupants, [channelId]: users } }));
+}
+
 const ICE: RTCIceServer[] = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }];
 
-const pcs = new Map<string, RTCPeerConnection>();
+interface PeerEntry {
+  pc: RTCPeerConnection;
+  makingOffer: boolean;
+  polite: boolean;
+}
+const pcs = new Map<string, PeerEntry>();
 const audios = new Map<string, HTMLAudioElement>();
-let localStream: MediaStream | null = null;
+let localStream: MediaStream | null = null; // mic
+let localVideoStream: MediaStream | null = null; // camera or screen
+const remoteVideos = new Map<string, MediaStream>(); // socketId -> remote video stream
 let currentRoom: string | null = null;
 
-type SignalPayload = { sdp?: RTCSessionDescriptionInit; ice?: RTCIceCandidateInit };
+type SignalPayload = { description?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit };
+
+export function getLocalVideo(): MediaStream | null {
+  return localVideoStream;
+}
+export function getRemoteVideo(socketId: string): MediaStream | null {
+  return remoteVideos.get(socketId) ?? null;
+}
+function bumpVideo() {
+  useVoice.setState((s) => ({ videoTick: s.videoTick + 1 }));
+}
 
 // ── store helpers ──
 function addMember(p: VoicePeer) {
@@ -165,49 +194,86 @@ function attachAudio(socketId: string, stream: MediaStream) {
   addVad(socketId, stream);
 }
 
-// ── peer connections ──
-function createPc(socketId: string, initiator: boolean): RTCPeerConnection {
+// ── peer connections (perfect negotiation, supports adding video later) ──
+function createPc(socketId: string): PeerEntry {
   const existing = pcs.get(socketId);
   if (existing) return existing;
   const pc = new RTCPeerConnection({ iceServers: ICE });
-  pcs.set(socketId, pc);
+  const mySocket = getSocket();
+  const entry: PeerEntry = { pc, makingOffer: false, polite: (mySocket?.id ?? "") < socketId };
+  pcs.set(socketId, entry);
+
   localStream?.getTracks().forEach((t) => pc.addTrack(t, localStream!));
+  if (localVideoStream) localVideoStream.getTracks().forEach((t) => pc.addTrack(t, localVideoStream!));
+
   pc.onicecandidate = (e) => {
-    if (e.candidate) getSocket()?.emit("voice:signal", { to: socketId, signal: { ice: e.candidate.toJSON() } });
+    if (e.candidate) getSocket()?.emit("voice:signal", { to: socketId, signal: { candidate: e.candidate.toJSON() } });
   };
-  pc.ontrack = (e) => attachAudio(socketId, e.streams[0]!);
+  pc.onnegotiationneeded = async () => {
+    try {
+      entry.makingOffer = true;
+      await pc.setLocalDescription();
+      getSocket()?.emit("voice:signal", { to: socketId, signal: { description: pc.localDescription! } });
+    } catch {
+      /* ignore */
+    } finally {
+      entry.makingOffer = false;
+    }
+  };
+  pc.ontrack = (e) => {
+    const stream = e.streams[0]!;
+    if (e.track.kind === "audio") {
+      attachAudio(socketId, stream);
+    } else {
+      remoteVideos.set(socketId, stream);
+      bumpVideo();
+      e.track.onended = () => {
+        remoteVideos.delete(socketId);
+        bumpVideo();
+      };
+      e.track.onmute = () => {
+        remoteVideos.delete(socketId);
+        bumpVideo();
+      };
+      e.track.onunmute = () => {
+        remoteVideos.set(socketId, stream);
+        bumpVideo();
+      };
+    }
+  };
   pc.onconnectionstatechange = () => {
     if (pc.connectionState === "failed" || pc.connectionState === "closed") removePeer(socketId);
   };
-  if (initiator) {
-    pc.createOffer()
-      .then((o) => pc.setLocalDescription(o))
-      .then(() => getSocket()?.emit("voice:signal", { to: socketId, signal: { sdp: pc.localDescription! } }))
-      .catch(() => {});
-  }
-  return pc;
+  return entry;
 }
 
 async function handleSignal(from: string, raw: unknown) {
   const signal = raw as SignalPayload;
-  let pc = pcs.get(from);
-  if (signal.sdp) {
-    if (!pc) pc = createPc(from, false);
-    await pc.setRemoteDescription(signal.sdp);
-    if (signal.sdp.type === "offer") {
-      const ans = await pc.createAnswer();
-      await pc.setLocalDescription(ans);
-      getSocket()?.emit("voice:signal", { to: from, signal: { sdp: pc.localDescription! } });
+  const entry = pcs.get(from) ?? createPc(from);
+  const pc = entry.pc;
+  try {
+    if (signal.description) {
+      const offerCollision = signal.description.type === "offer" && (entry.makingOffer || pc.signalingState !== "stable");
+      if (!entry.polite && offerCollision) return; // ignore — we win the glare
+      await pc.setRemoteDescription(signal.description);
+      if (signal.description.type === "offer") {
+        await pc.setLocalDescription();
+        getSocket()?.emit("voice:signal", { to: from, signal: { description: pc.localDescription! } });
+      }
+    } else if (signal.candidate) {
+      await pc.addIceCandidate(signal.candidate).catch(() => {});
     }
-  } else if (signal.ice && pc) {
-    await pc.addIceCandidate(signal.ice).catch(() => {});
+  } catch {
+    /* ignore */
   }
 }
 
 function removePeer(socketId: string) {
-  pcs.get(socketId)?.close();
+  pcs.get(socketId)?.pc.close();
   pcs.delete(socketId);
   removeVad(socketId);
+  remoteVideos.delete(socketId);
+  bumpVideo();
   const el = audios.get(socketId);
   if (el) {
     el.srcObject = null;
@@ -222,12 +288,13 @@ const onPeers = (d: { roomId: string; peers: VoicePeer[] }) => {
   if (d.roomId !== currentRoom) return;
   for (const p of d.peers) {
     addMember(p);
-    createPc(p.socketId, true); // newcomer initiates to everyone already here
+    createPc(p.socketId); // both sides create; perfect negotiation handles offers
   }
 };
 const onJoined = (d: { roomId: string; peer: VoicePeer }) => {
   if (d.roomId !== currentRoom) return;
-  addMember(d.peer); // they will send us an offer
+  addMember(d.peer);
+  createPc(d.peer.socketId);
 };
 const onLeft = (d: { roomId: string; socketId: string }) => {
   if (d.roomId !== currentRoom) return;
@@ -289,7 +356,7 @@ export async function leaveVoice() {
   const socket = getSocket();
   if (currentRoom && socket) socket.emit("voice:leave", { roomId: currentRoom });
   detachListeners();
-  pcs.forEach((pc) => pc.close());
+  pcs.forEach((e) => e.pc.close());
   pcs.clear();
   audios.forEach((el) => {
     el.srcObject = null;
@@ -298,9 +365,21 @@ export async function leaveVoice() {
   audios.clear();
   localStream?.getTracks().forEach((t) => t.stop());
   localStream = null;
+  localVideoStream?.getTracks().forEach((t) => t.stop());
+  localVideoStream = null;
+  remoteVideos.clear();
   currentRoom = null;
   stopVad();
-  useVoice.setState({ roomId: null, label: null, kind: null, members: {}, connecting: false, selfSpeaking: false });
+  useVoice.setState({
+    roomId: null,
+    label: null,
+    kind: null,
+    members: {},
+    connecting: false,
+    selfSpeaking: false,
+    cameraOn: false,
+    screenOn: false,
+  });
 }
 
 export function ringDM(conversationId: string) {
@@ -321,4 +400,66 @@ export function toggleDeafen() {
   localStream?.getAudioTracks().forEach((t) => (t.enabled = !muted));
   useVoice.setState({ deafened, muted });
   if (currentRoom) getSocket()?.emit("voice:state", { roomId: currentRoom, muted, deafened });
+}
+
+// ── video (camera + screen share) ──
+function attachVideoToPeers() {
+  if (!localVideoStream) return;
+  const stream = localVideoStream;
+  pcs.forEach(({ pc }) => {
+    stream.getTracks().forEach((t) => {
+      if (!pc.getSenders().some((s) => s.track === t)) pc.addTrack(t, stream);
+    });
+  });
+}
+
+export async function stopVideo() {
+  if (localVideoStream) {
+    const tracks = localVideoStream.getTracks();
+    pcs.forEach(({ pc }) => {
+      pc.getSenders().forEach((s) => {
+        if (s.track && tracks.includes(s.track)) pc.removeTrack(s);
+      });
+    });
+    tracks.forEach((t) => t.stop());
+    localVideoStream = null;
+  }
+  useVoice.setState({ cameraOn: false, screenOn: false });
+  bumpVideo();
+}
+
+export async function startCamera() {
+  if (!currentRoom) return;
+  await stopVideo();
+  try {
+    localVideoStream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+  } catch {
+    return;
+  }
+  attachVideoToPeers();
+  useVoice.setState({ cameraOn: true, screenOn: false });
+  bumpVideo();
+}
+
+export async function startScreenShare() {
+  if (!currentRoom) return;
+  await stopVideo();
+  try {
+    localVideoStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+  } catch {
+    return;
+  }
+  localVideoStream.getVideoTracks()[0]?.addEventListener("ended", () => void stopVideo());
+  attachVideoToPeers();
+  useVoice.setState({ cameraOn: false, screenOn: true });
+  bumpVideo();
+}
+
+export function toggleCamera() {
+  if (useVoice.getState().cameraOn) void stopVideo();
+  else void startCamera();
+}
+export function toggleScreenShare() {
+  if (useVoice.getState().screenOn) void stopVideo();
+  else void startScreenShare();
 }

@@ -34,6 +34,26 @@ export function createGateway(httpServer: HttpServer): AppIO {
   // Redis adapter's fetchSockets() serialization doesn't choke on a Set).
   const voiceMembership = new Map<string, Set<string>>();
 
+  // Voice-channel occupancy so everyone in a server sees who is in each VC.
+  type VPeer = { socketId: string; userId: string; username: string; displayName: string | null; avatarUrl: string | null };
+  const voiceChannels = new Map<string, Map<string, VPeer>>(); // channelId -> userId -> peer
+  const channelServerCache = new Map<string, string | null>();
+
+  async function channelServerId(channelId: string): Promise<string | null> {
+    if (channelServerCache.has(channelId)) return channelServerCache.get(channelId)!;
+    const ch = await prisma.channel.findUnique({ where: { id: channelId }, select: { serverId: true } });
+    const sid = ch?.serverId ?? null;
+    channelServerCache.set(channelId, sid);
+    return sid;
+  }
+
+  async function broadcastVoiceChannel(channelId: string) {
+    const sid = await channelServerId(channelId);
+    if (!sid) return; // DM call, not a server channel
+    const users = [...(voiceChannels.get(channelId)?.values() ?? [])];
+    io.to(room.server(sid)).emit("voice:channel-update", { channelId, users });
+  }
+
   // Authenticate every socket via its access token.
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token as string | undefined;
@@ -163,12 +183,29 @@ export function createGateway(httpServer: HttpServer): AppIO {
           })),
       });
       socket.to(vr).emit("voice:peer-joined", { roomId, peer: peerOf() });
+
+      // Track + broadcast channel occupancy to the whole server.
+      let occ = voiceChannels.get(roomId);
+      if (!occ) voiceChannels.set(roomId, (occ = new Map()));
+      occ.set(uid, peerOf());
+      void broadcastVoiceChannel(roomId);
     });
 
     socket.on("voice:leave", ({ roomId }) => {
       socket.leave(room.voice(roomId));
       voiceMembership.get(socket.id)?.delete(roomId);
       socket.to(room.voice(roomId)).emit("voice:peer-left", { roomId, socketId: socket.id });
+      const occ = voiceChannels.get(roomId);
+      if (occ?.delete(uid)) void broadcastVoiceChannel(roomId);
+    });
+
+    // Send current occupancy for all of a server's voice channels.
+    socket.on("voice:sync", ({ serverId }) => {
+      for (const [channelId, occ] of voiceChannels) {
+        if (channelServerCache.get(channelId) === serverId && occ.size > 0) {
+          socket.emit("voice:channel-update", { channelId, users: [...occ.values()] });
+        }
+      }
     });
 
     socket.on("voice:signal", ({ to, signal }) => {
@@ -192,9 +229,11 @@ export function createGateway(httpServer: HttpServer): AppIO {
     });
 
     socket.on("disconnect", async () => {
-      // Notify voice peers this socket dropped.
+      // Notify voice peers this socket dropped + update channel occupancy.
       for (const roomId of voiceMembership.get(socket.id) ?? []) {
         socket.to(room.voice(roomId)).emit("voice:peer-left", { roomId, socketId: socket.id });
+        const occ = voiceChannels.get(roomId);
+        if (occ?.delete(uid)) void broadcastVoiceChannel(roomId);
       }
       voiceMembership.delete(socket.id);
       // If this was the user's last socket, mark offline.

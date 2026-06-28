@@ -187,7 +187,7 @@ export function ChannelSidebar({
           const isVoice = c.type === "VOICE" || c.type === "STAGE" || c.type === "VIDEO";
           const selectable = c.type === "TEXT" || c.type === "ANNOUNCEMENT";
           const inThisVoice = voice.roomId === c.id;
-          const voiceMembers = inThisVoice ? Object.values(voice.members) : [];
+          const occupants = isVoice ? (voice.channelOccupants[c.id] ?? []) : [];
           return (
             <div key={c.id}>
               <button
@@ -201,22 +201,28 @@ export function ChannelSidebar({
               >
                 <Icon name={channelIcon(c.type)} size={16} className="shrink-0 text-muted" />
                 <span className="truncate">{c.name}</span>
+                {occupants.length > 0 && <span className="ml-auto text-[11px] text-muted">{occupants.length}</span>}
               </button>
-              {/* Voice participants */}
-              {inThisVoice && (
+              {/* Voice participants (visible to everyone in the server) */}
+              {occupants.length > 0 && (
                 <div className="ml-6 mt-0.5 space-y-0.5">
-                  {user && (
-                    <div className="flex items-center gap-2 rounded px-2 py-1 text-xs text-ink">
-                      <VoiceAvatar name={displayName(user)} src={user.avatarUrl} size={22} speaking={voice.selfSpeaking} muted={voice.muted} deafened={voice.deafened} />
-                      {displayName(user)}
-                    </div>
-                  )}
-                  {voiceMembers.map((m) => (
-                    <div key={m.socketId} className="flex items-center gap-2 rounded px-2 py-1 text-xs text-muted">
-                      <VoiceAvatar name={m.displayName ?? m.username} src={m.avatarUrl} size={22} speaking={m.speaking} muted={m.muted} deafened={m.deafened} />
-                      {m.displayName ?? m.username}
-                    </div>
-                  ))}
+                  {occupants.map((p) => {
+                    const isMe = p.userId === user?.id;
+                    const member = Object.values(voice.members).find((m) => m.userId === p.userId);
+                    return (
+                      <div key={p.socketId} className="flex items-center gap-2 rounded px-2 py-1 text-xs text-muted">
+                        <VoiceAvatar
+                          name={p.displayName ?? p.username}
+                          src={p.avatarUrl}
+                          size={22}
+                          speaking={isMe ? voice.selfSpeaking : member?.speaking}
+                          muted={isMe ? voice.muted : member?.muted}
+                          deafened={isMe ? voice.deafened : member?.deafened}
+                        />
+                        {p.displayName ?? p.username}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
