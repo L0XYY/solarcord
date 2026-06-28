@@ -19,7 +19,6 @@ interface SocketData {
   username?: string;
   displayName?: string | null;
   avatarUrl?: string | null;
-  voiceRooms?: Set<string>;
 }
 
 export type AppIO = IOServer<ClientToServerEvents, ServerToClientEvents, Record<string, never>, SocketData>;
@@ -30,6 +29,10 @@ export function createGateway(httpServer: HttpServer): AppIO {
   });
 
   io.adapter(createAdapter(redisPub, redisSub));
+
+  // Track which voice rooms each socket is in (kept OUT of socket.data so the
+  // Redis adapter's fetchSockets() serialization doesn't choke on a Set).
+  const voiceMembership = new Map<string, Set<string>>();
 
   // Authenticate every socket via its access token.
   io.use((socket, next) => {
@@ -64,7 +67,6 @@ export function createGateway(httpServer: HttpServer): AppIO {
       where: { id: uid },
       select: { id: true, username: true, displayName: true, avatarUrl: true, status: true },
     });
-    socket.data.voiceRooms = new Set();
     if (user) {
       socket.data.username = user.username;
       socket.data.displayName = user.displayName;
@@ -143,25 +145,29 @@ export function createGateway(httpServer: HttpServer): AppIO {
 
     socket.on("voice:join", async ({ roomId }) => {
       const vr = room.voice(roomId);
-      const existing = await io.in(vr).fetchSockets();
+      const existing = await io.in(vr).fetchSockets().catch(() => []);
       socket.join(vr);
-      socket.data.voiceRooms?.add(roomId);
+      let set = voiceMembership.get(socket.id);
+      if (!set) voiceMembership.set(socket.id, (set = new Set()));
+      set.add(roomId);
       socket.emit("voice:peers", {
         roomId,
-        peers: existing.map((s) => ({
-          socketId: s.id,
-          userId: s.data.userId,
-          username: s.data.username ?? "",
-          displayName: s.data.displayName ?? null,
-          avatarUrl: s.data.avatarUrl ?? null,
-        })),
+        peers: existing
+          .filter((s) => s.id !== socket.id)
+          .map((s) => ({
+            socketId: s.id,
+            userId: s.data.userId,
+            username: s.data.username ?? "",
+            displayName: s.data.displayName ?? null,
+            avatarUrl: s.data.avatarUrl ?? null,
+          })),
       });
       socket.to(vr).emit("voice:peer-joined", { roomId, peer: peerOf() });
     });
 
     socket.on("voice:leave", ({ roomId }) => {
       socket.leave(room.voice(roomId));
-      socket.data.voiceRooms?.delete(roomId);
+      voiceMembership.get(socket.id)?.delete(roomId);
       socket.to(room.voice(roomId)).emit("voice:peer-left", { roomId, socketId: socket.id });
     });
 
@@ -187,9 +193,10 @@ export function createGateway(httpServer: HttpServer): AppIO {
 
     socket.on("disconnect", async () => {
       // Notify voice peers this socket dropped.
-      for (const roomId of socket.data.voiceRooms ?? []) {
+      for (const roomId of voiceMembership.get(socket.id) ?? []) {
         socket.to(room.voice(roomId)).emit("voice:peer-left", { roomId, socketId: socket.id });
       }
+      voiceMembership.delete(socket.id);
       // If this was the user's last socket, mark offline.
       const remaining = await io.in(room.user(uid)).fetchSockets();
       if (remaining.length === 0) {

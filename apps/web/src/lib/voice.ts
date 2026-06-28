@@ -176,6 +176,9 @@ export async function joinVoice(roomId: string, label: string, kind: "channel" |
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch {
     useVoice.setState({ connecting: false, roomId: null, label: null, kind: null, error: "Microphone access denied" });
+    if (typeof window !== "undefined") {
+      window.alert("Couldn't access your microphone. Allow mic access in your browser, then try joining again.");
+    }
     return;
   }
   currentRoom = roomId;
