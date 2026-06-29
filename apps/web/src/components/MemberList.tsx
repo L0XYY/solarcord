@@ -78,7 +78,6 @@ export function MemberList({
             {g.members.map((m) => {
               const cr = colourRole(m, byId);
               const nameColor = cr ? colorToHex(cr.color) : undefined;
-              const topRole = hoistRole(m, byId) ?? cr;
               return (
                 <button
                   key={m.id}
@@ -109,15 +108,8 @@ export function MemberList({
                       )}
                       {m.user.tag && <ServerTag tag={m.user.tag} badge={m.user.tagBadge} />}
                     </span>
-                    {m.user.customStatus ? (
+                    {m.user.customStatus && (
                       <span className="block truncate text-[11px] text-muted">{m.user.customStatus}</span>
-                    ) : (
-                      topRole && (
-                        <span className="flex items-center gap-1 text-[10px] text-muted">
-                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: colorToHex(topRole.color) }} />
-                          {topRole.name}
-                        </span>
-                      )
                     )}
                   </span>
                 </button>
