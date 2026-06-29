@@ -26,6 +26,12 @@ interface ChatPanelProps {
   onMobileBack?: () => void;
   onSelectUser?: (userId: string) => void;
   onStartCall?: () => void;
+  roleMeta?: Map<string, RoleMeta>;
+}
+
+export interface RoleMeta {
+  color?: string;
+  icons: { iconUrl: string; name: string }[];
 }
 
 export function ChatPanel({
@@ -45,6 +51,7 @@ export function ChatPanel({
   onMobileBack,
   onSelectUser,
   onStartCall,
+  roleMeta,
 }: ChatPanelProps) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
@@ -147,6 +154,7 @@ export function ChatPanel({
             new Date(m.createdAt).getTime() - new Date(prev.createdAt).getTime() < 5 * 60_000;
           const mine = m.author.id === currentUserId;
           const isEditing = editing?.id === m.id;
+          const meta = roleMeta?.get(m.author.id);
 
           return (
             <div key={m.id} className="group relative flex animate-msg gap-3 rounded-lg px-2 py-0.5 hover:bg-night-800/40">
@@ -171,9 +179,21 @@ export function ChatPanel({
 
               <div className={clsx("min-w-0 flex-1", m.replyTo && "pt-5")}>
                 {(!grouped || m.replyTo) && (
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-semibold">{displayName(m.author)}</span>
-                    {m.author.tag && <ServerTag tag={m.author.tag} badge={m.author.tagBadge} className="translate-y-px" />}
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="font-semibold" style={meta?.color ? { color: meta.color } : undefined}>
+                      {displayName(m.author)}
+                    </span>
+                    {meta?.icons.map((ic) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={ic.name}
+                        src={ic.iconUrl}
+                        alt={ic.name}
+                        title={ic.name}
+                        className="h-4 w-4 translate-y-px rounded-sm object-contain"
+                      />
+                    ))}
+                    {m.author.tag && <ServerTag tag={m.author.tag} badge={m.author.tagBadge} className="ml-0.5 translate-y-px" />}
                     {m.isWebhook && (
                       <span className="rounded bg-aurora/20 px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none text-aurora">
                         App

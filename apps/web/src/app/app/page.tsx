@@ -6,10 +6,10 @@ import { api, bootstrapSession } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { connectSocket, disconnectSocket, type AppSocket } from "@/lib/socket";
 import { joinVoice, ringDM, setChannelOccupants } from "@/lib/voice";
-import { displayName } from "@/lib/ui";
+import { displayName, colorToHex } from "@/lib/ui";
 import { ServerDock } from "@/components/ServerDock";
 import { ChannelSidebar } from "@/components/ChannelSidebar";
-import { ChatPanel } from "@/components/ChatPanel";
+import { ChatPanel, type RoleMeta } from "@/components/ChatPanel";
 import { MemberList } from "@/components/MemberList";
 import { CreateServerModal } from "@/components/CreateServerModal";
 import { InviteModal } from "@/components/InviteModal";
@@ -419,6 +419,25 @@ export default function AppPage() {
   }, [members, friends, conversations]);
   const typingNames = Object.keys(typing).map((uid) => nameOf.get(uid) ?? "Someone");
 
+  // Per-user role colour + role icons, for the message author line.
+  const roleMeta = useMemo(() => {
+    const map = new Map<string, RoleMeta>();
+    if (!detail) return map;
+    const byId = new Map(detail.roles.map((r) => [r.id, r]));
+    for (const m of members) {
+      const roles = (m.roleIds ?? [])
+        .map((id) => byId.get(id))
+        .filter((r): r is NonNullable<typeof r> => !!r && !r.isEveryone);
+      const colored = roles.filter((r) => r.color).sort((a, b) => b.position - a.position)[0];
+      const icons = roles
+        .filter((r) => r.iconUrl)
+        .sort((a, b) => b.position - a.position)
+        .map((r) => ({ iconUrl: r.iconUrl as string, name: r.name }));
+      if (colored || icons.length) map.set(m.user.id, { color: colored ? colorToHex(colored.color) : undefined, icons });
+    }
+    return map;
+  }, [members, detail]);
+
   const pendingCount = friends.incoming.length;
 
   if (!ready) {
@@ -527,6 +546,7 @@ export default function AppPage() {
                 typingNames={typingNames}
                 currentUserId={user?.id ?? ""}
                 canManageMessages={!isDM && !!user && !!detail && detail.ownerId === user.id}
+                roleMeta={isDM ? undefined : roleMeta}
                 enableReactions={!isDM}
                 placeholderLabel={isDM && panelChannel ? `Message @${panelChannel.name}` : undefined}
                 onSend={sendMessage}
