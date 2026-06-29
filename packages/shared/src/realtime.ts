@@ -44,6 +44,18 @@ export interface ChannelSummary {
   position: number;
 }
 
+export interface RoleWire {
+  id: string;
+  name: string;
+  color: number;
+  position: number;
+  permissions: string;
+  iconUrl: string | null;
+  isEveryone: boolean;
+  isHoisted: boolean;
+  mentionable: boolean;
+}
+
 // Server → client
 export interface ServerToClientEvents {
   ready: (data: { user: PublicUser; servers: { id: string; name: string }[] }) => void;
@@ -57,6 +69,8 @@ export interface ServerToClientEvents {
   "presence:update": (data: { userId: string; status: PresenceStatus }) => void;
   // A member's roles changed — clients update the member list live.
   "member:update": (data: { serverId: string; userId: string; roleIds: string[] }) => void;
+  // A server's role definitions changed (created/edited/deleted/hoisted).
+  "server:roles": (data: { serverId: string; roles: RoleWire[] }) => void;
   // A server's boost count changed.
   "server:boost": (data: { serverId: string; boostCount: number; boostLevel: number }) => void;
   // Friends & DMs

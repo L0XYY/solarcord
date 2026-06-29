@@ -11,6 +11,12 @@ async function broadcastMemberRoles(app: FastifyInstance, serverId: string, memb
   app.io.to(room.server(serverId)).emit("member:update", { serverId, userId: targetUserId, roleIds: links.map((l) => l.roleId) });
 }
 
+// Broadcast the server's full role list so member-list grouping/colours update live.
+async function broadcastRoles(app: FastifyInstance, serverId: string) {
+  const roles = await prisma.role.findMany({ where: { serverId }, orderBy: { position: "desc" } });
+  app.io.to(room.server(serverId)).emit("server:roles", { serverId, roles });
+}
+
 // Non-owners can only grant permission bits they already hold.
 function assertNoElevation(ctx: MemberContext, newPerms: string) {
   if (ctx.isOwner) return;
@@ -54,6 +60,7 @@ export async function roleRoutes(app: FastifyInstance) {
       },
     });
     await prisma.auditLog.create({ data: { serverId: id, actorId: userId(req), action: "role.create", targetId: role.id } });
+    await broadcastRoles(app, id);
     return reply.code(201).send({ role });
   });
 
@@ -82,6 +89,7 @@ export async function roleRoutes(app: FastifyInstance) {
       },
     });
     await prisma.auditLog.create({ data: { serverId: role.serverId, actorId: userId(req), action: "role.update", targetId: id } });
+    await broadcastRoles(app, role.serverId);
     return { role: updated };
   });
 
@@ -95,6 +103,7 @@ export async function roleRoutes(app: FastifyInstance) {
 
     await prisma.role.delete({ where: { id } });
     await prisma.auditLog.create({ data: { serverId: role.serverId, actorId: userId(req), action: "role.delete", targetId: id } });
+    await broadcastRoles(app, role.serverId);
     return reply.code(204).send();
   });
 

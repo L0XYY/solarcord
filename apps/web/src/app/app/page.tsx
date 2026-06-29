@@ -200,6 +200,9 @@ export default function AppPage() {
     const onMemberUpdate = (d: { serverId: string; userId: string; roleIds: string[] }) => {
       setMembers((prev) => prev.map((mb) => (mb.user.id === d.userId ? { ...mb, roleIds: d.roleIds } : mb)));
     };
+    const onRolesUpdate = (d: { serverId: string; roles: ServerDetail["roles"] }) => {
+      setDetail((dt) => (dt && dt.id === d.serverId ? { ...dt, roles: d.roles } : dt));
+    };
     const onServerBoost = (d: { serverId: string; boostCount: number; boostLevel: number }) => {
       setDetail((dt) => (dt && dt.id === d.serverId ? { ...dt, boostCount: d.boostCount, boostLevel: d.boostLevel } : dt));
     };
@@ -219,6 +222,7 @@ export default function AppPage() {
     socket.on("voice:channel-update", onVoiceChannelUpdate);
     socket.on("member:update", onMemberUpdate);
     socket.on("server:boost", onServerBoost);
+    socket.on("server:roles", onRolesUpdate);
 
     return () => {
       socket.off("message:create", onMessage);
@@ -236,6 +240,7 @@ export default function AppPage() {
       socket.off("voice:channel-update", onVoiceChannelUpdate);
       socket.off("member:update", onMemberUpdate);
       socket.off("server:boost", onServerBoost);
+      socket.off("server:roles", onRolesUpdate);
     };
   }, [ready, user, refetchFriends, refetchConversations]);
 

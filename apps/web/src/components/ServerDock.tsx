@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type MouseEvent as ReactMouseEvent } from "react";
 import clsx from "clsx";
 import { initials } from "@/lib/ui";
 import { api } from "@/lib/api";
@@ -26,15 +26,16 @@ interface ServerSummaryData {
 // Module-level cache so we only fetch a server's summary once per session.
 const summaryCache = new Map<string, ServerSummaryData>();
 
-function ServerHoverCard({ summary, fallbackName }: { summary?: ServerSummaryData; fallbackName: string }) {
+function ServerHoverCard({ summary, fallbackName, anchor }: { summary?: ServerSummaryData; fallbackName: string; anchor: { top: number; left: number } }) {
   const community = summary && (summary.visibility === "COMMUNITY" || summary.visibility === "PUBLIC" || summary.visibility === "DISCOVERABLE");
   const badges = new Set<string>(summary?.badgeTypes ?? []);
   if (summary?.isVerified) badges.add("VERIFIED");
   if (summary?.isPartnered) badges.add("SOLAR_PARTNER");
   if (community) badges.add("COMMUNITY");
 
+  // Fixed to the viewport so the dock's `overflow-y-auto` can't clip it.
   return (
-    <div className="pointer-events-none absolute left-[64px] top-1/2 z-50 w-60 -translate-y-1/2 animate-fade">
+    <div className="pointer-events-none fixed z-[80] w-60 -translate-y-1/2 animate-fade" style={{ top: anchor.top, left: anchor.left }}>
       <div className="rounded-2xl border border-line/10 bg-night-800/95 p-3 shadow-glass backdrop-blur-xl">
         <div className="flex items-center gap-2">
           <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl bg-night-700 text-xs font-bold">
@@ -154,11 +155,12 @@ export function ServerDock({
 }
 
 function ServerDockItem({ server: s, active, onSelect }: { server: ServerSummary; active: boolean; onSelect: (id: string) => void }) {
-  const [hover, setHover] = useState(false);
+  const [anchor, setAnchor] = useState<{ top: number; left: number } | null>(null);
   const [summary, setSummary] = useState<ServerSummaryData | undefined>(summaryCache.get(s.id));
 
-  function onEnter() {
-    setHover(true);
+  function onEnter(e: ReactMouseEvent<HTMLDivElement>) {
+    const r = e.currentTarget.getBoundingClientRect();
+    setAnchor({ top: r.top + r.height / 2, left: r.right + 12 });
     if (!summaryCache.has(s.id)) {
       api<{ summary: ServerSummaryData }>(`/servers/${s.id}/summary`)
         .then((r) => {
@@ -170,7 +172,7 @@ function ServerDockItem({ server: s, active, onSelect }: { server: ServerSummary
   }
 
   return (
-    <div className="relative" onMouseEnter={onEnter} onMouseLeave={() => setHover(false)}>
+    <div className="relative" onMouseEnter={onEnter} onMouseLeave={() => setAnchor(null)}>
       <button onClick={() => onSelect(s.id)} className="group relative block">
         <span
           className={clsx(
@@ -194,7 +196,7 @@ function ServerDockItem({ server: s, active, onSelect }: { server: ServerSummary
           )}
         </span>
       </button>
-      {hover && <ServerHoverCard summary={summary} fallbackName={s.name} />}
+      {anchor && <ServerHoverCard summary={summary} fallbackName={s.name} anchor={anchor} />}
     </div>
   );
 }

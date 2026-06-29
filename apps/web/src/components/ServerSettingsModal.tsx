@@ -124,6 +124,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
   const [color, setColor] = useState(0);
   const [perms, setPerms] = useState("0");
   const [icon, setIcon] = useState<string | null>(null);
+  const [hoisted, setHoisted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,12 +140,14 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
       setColor(selected.color);
       setPerms(selected.permissions);
       setIcon(selected.iconUrl);
+      setHoisted(selected.isHoisted);
       setError(null);
     }
   }, [selected]);
 
   const dirty =
-    selected && (name !== selected.name || color !== selected.color || perms !== selected.permissions || icon !== selected.iconUrl);
+    selected &&
+    (name !== selected.name || color !== selected.color || perms !== selected.permissions || icon !== selected.iconUrl || hoisted !== selected.isHoisted);
 
   function togglePerm(key: PermissionKey) {
     const bit = Permission[key];
@@ -172,7 +175,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
     setSaving(true);
     setError(null);
     try {
-      await api(`/roles/${selected.id}`, { method: "PATCH", json: { name, color, permissions: perms, iconUrl: icon } });
+      await api(`/roles/${selected.id}`, { method: "PATCH", json: { name, color, permissions: perms, iconUrl: icon, hoisted } });
       await onReload();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Failed to save");
@@ -275,6 +278,16 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
               </div>
             </div>
 
+            {!selected.isEveryone && (
+              <label className="mt-5 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-line/10 bg-night-900/40 p-3">
+                <span>
+                  <span className="text-sm font-medium">Display role members separately</span>
+                  <span className="block text-xs text-muted">Show members with this role in their own group in the member list.</span>
+                </span>
+                <Toggle on={hoisted} onClick={() => setHoisted((v) => !v)} />
+              </label>
+            )}
+
             <div className="mt-6">
               <label className="text-[11px] font-bold uppercase tracking-wider text-muted">Permissions</label>
               <div className="mt-2 space-y-5">
@@ -313,6 +326,7 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
                 setColor(selected.color);
                 setPerms(selected.permissions);
                 setIcon(selected.iconUrl);
+                setHoisted(selected.isHoisted);
               }
             }}
             className="btn-ghost py-1.5 text-sm"
