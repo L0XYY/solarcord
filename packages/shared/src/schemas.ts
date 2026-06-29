@@ -167,6 +167,8 @@ export const updateRoleSchema = z.object({
   mentionable: z.boolean().optional(),
 });
 
+export const moveRoleSchema = z.object({ direction: z.enum(["up", "down"]) });
+
 // ── Custom user badges (admin) ──
 export const createUserBadgeSchema = z.object({
   key: z.string().min(2).max(40).regex(/^[a-z0-9_]+$/, "Lowercase letters, numbers, underscore"),

@@ -170,6 +170,11 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
     }
   }
 
+  async function move(roleId: string, direction: "up" | "down") {
+    await api(`/roles/${roleId}/move`, { method: "POST", json: { direction } }).catch(() => {});
+    await onReload();
+  }
+
   async function save() {
     if (!selected) return;
     setSaving(true);
@@ -207,24 +212,56 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-2">
-          {roles.map((r) => (
-            <button
-              key={r.id}
-              onClick={() => setSelectedId(r.id)}
-              className={clsx(
-                "mb-0.5 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition",
-                r.id === selectedId ? "bg-night-700/70 text-ink" : "text-muted hover:bg-night-700/40 hover:text-ink",
-              )}
-            >
-              {r.iconUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={r.iconUrl} alt="" className="h-4 w-4 shrink-0 rounded" />
-              ) : (
-                <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: colorToHex(r.color) }} />
-              )}
-              <span className="truncate">{r.name}</span>
-            </button>
-          ))}
+          {roles.map((r, i) => {
+            // roles arrive sorted by position desc (top = highest).
+            const canUp = i > 0 && !r.isEveryone;
+            const canDown = !r.isEveryone && !!roles[i + 1] && !roles[i + 1]!.isEveryone;
+            return (
+              <div
+                key={r.id}
+                className={clsx(
+                  "group mb-0.5 flex items-center gap-1 rounded-lg pr-1 transition",
+                  r.id === selectedId ? "bg-night-700/70" : "hover:bg-night-700/40",
+                )}
+              >
+                <button
+                  onClick={() => setSelectedId(r.id)}
+                  className={clsx(
+                    "flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm transition",
+                    r.id === selectedId ? "text-ink" : "text-muted group-hover:text-ink",
+                  )}
+                >
+                  {r.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.iconUrl} alt="" className="h-4 w-4 shrink-0 rounded" />
+                  ) : (
+                    <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: colorToHex(r.color) }} />
+                  )}
+                  <span className="truncate">{r.name}</span>
+                </button>
+                {!r.isEveryone && (
+                  <span className="flex shrink-0 items-center opacity-0 transition group-hover:opacity-100">
+                    <button
+                      disabled={!canUp}
+                      onClick={() => move(r.id, "up")}
+                      title="Move up"
+                      className="grid h-6 w-5 place-items-center rounded text-muted hover:text-ink disabled:opacity-25"
+                    >
+                      <Icon name="chevronLeft" size={13} className="rotate-90" />
+                    </button>
+                    <button
+                      disabled={!canDown}
+                      onClick={() => move(r.id, "down")}
+                      title="Move down"
+                      className="grid h-6 w-5 place-items-center rounded text-muted hover:text-ink disabled:opacity-25"
+                    >
+                      <Icon name="chevronLeft" size={13} className="-rotate-90" />
+                    </button>
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

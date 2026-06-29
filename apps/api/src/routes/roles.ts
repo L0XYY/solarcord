@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "@solarcord/db";
-import { createRoleSchema, updateRoleSchema, Permission, toBits, room } from "@solarcord/shared";
+import { createRoleSchema, updateRoleSchema, moveRoleSchema, Permission, toBits, room } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { requirePermission, resolveMember, type MemberContext } from "../permissions.js";
@@ -91,6 +91,32 @@ export async function roleRoutes(app: FastifyInstance) {
     await prisma.auditLog.create({ data: { serverId: role.serverId, actorId: userId(req), action: "role.update", targetId: id } });
     await broadcastRoles(app, role.serverId);
     return { role: updated };
+  });
+
+  // Reorder a role one step up (higher in the hierarchy) or down.
+  app.post("/roles/:id/move", async (req) => {
+    const { id } = req.params as { id: string };
+    const { direction } = moveRoleSchema.parse(req.body);
+    const role = await prisma.role.findUnique({ where: { id } });
+    if (!role) throw Errors.notFound("Role not found");
+    if (role.isEveryone) throw Errors.validation("The default role can't be moved");
+    const ctx = await requirePermission(role.serverId, userId(req), Permission.MANAGE_ROLES);
+    assertAboveRole(ctx, role.position);
+
+    // Swap positions with the adjacent non-everyone role in the travel direction.
+    const all = await prisma.role.findMany({ where: { serverId: role.serverId, isEveryone: false }, orderBy: { position: "asc" } });
+    const idx = all.findIndex((r) => r.id === id);
+    const target = all[direction === "up" ? idx + 1 : idx - 1];
+    if (!target) return { ok: true }; // already at the edge
+    assertAboveRole(ctx, target.position);
+
+    await prisma.$transaction([
+      prisma.role.update({ where: { id: role.id }, data: { position: target.position } }),
+      prisma.role.update({ where: { id: target.id }, data: { position: role.position } }),
+    ]);
+    await prisma.auditLog.create({ data: { serverId: role.serverId, actorId: userId(req), action: "role.move", targetId: id } });
+    await broadcastRoles(app, role.serverId);
+    return { ok: true };
   });
 
   app.delete("/roles/:id", async (req, reply) => {
