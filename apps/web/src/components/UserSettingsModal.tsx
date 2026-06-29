@@ -4,11 +4,12 @@ import clsx from "clsx";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, type SelfUser } from "@/lib/store";
 import { statusColor, initials, displayName as displayNameOf } from "@/lib/ui";
-import { getTheme, setTheme, type Theme } from "@/lib/theme";
+import { getTheme, setTheme, getAccent, setAccent, ACCENTS, type Theme, type Accent } from "@/lib/theme";
 import { ACCOUNT_STANDING_INFO, type AccountStanding } from "@solarcord/shared";
 import { ImageUpload } from "./ImageUpload";
 import { ProfileCardView, type ProfileViewData } from "./ProfileCard";
 import { AccountStandingPanel } from "./AccountStanding";
+import { BadgeIcon } from "./BadgeIcon";
 import { Icon, type IconName } from "./Icon";
 
 type Tab = "profile" | "standing" | "appearance";
@@ -298,13 +299,30 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 
 function AppearanceTab() {
   const [theme, setT] = useState<Theme>(getTheme());
+  const [accent, setA] = useState<Accent>(getAccent());
+  const [perk, setPerk] = useState<{ solarPlus: boolean; isStaff: boolean } | null>(null);
+
+  useEffect(() => {
+    api<{ boosts: { solarPlus: boolean; isStaff: boolean } }>("/users/me/boosts")
+      .then((r) => setPerk({ solarPlus: r.boosts.solarPlus, isStaff: r.boosts.isStaff }))
+      .catch(() => setPerk({ solarPlus: false, isStaff: false }));
+  }, []);
+
+  const unlocked = !!perk && (perk.solarPlus || perk.isStaff);
+
   function choose(t: Theme) {
     setTheme(t);
     setT(t);
   }
+  function chooseAccent(a: Accent) {
+    if (a !== "default" && !unlocked) return;
+    setAccent(a);
+    setA(a);
+  }
+
   return (
     <div className="p-6">
-      <h3 className="font-bold">Appearance</h3>
+      <h3 className="text-lg font-extrabold">Appearance</h3>
       <p className="mt-1 text-sm text-muted">Choose how SolarCord looks. The glass theme adapts to both.</p>
       <div className="mt-5 grid grid-cols-2 gap-4">
         {(["dark", "light"] as Theme[]).map((t) => (
@@ -328,6 +346,44 @@ function AppearanceTab() {
             </div>
           </button>
         ))}
+      </div>
+
+      {/* Solar+ accent themes */}
+      <div className="mt-7 flex items-center gap-2">
+        <h4 className="text-sm font-bold">Accent theme</h4>
+        <span className="flex items-center gap-1 rounded-full bg-solar/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-solar">
+          <BadgeIcon badge="solar_plus" size={12} /> Solar+
+        </span>
+      </div>
+      <p className="mt-1 text-sm text-muted">
+        {unlocked ? "Recolour SolarCord with an exclusive accent." : "Subscribe to Solar+ to unlock custom accent themes."}
+      </p>
+      <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-8">
+        {ACCENTS.map((a) => {
+          const locked = a.id !== "default" && !unlocked;
+          const active = accent === a.id;
+          return (
+            <button
+              key={a.id}
+              onClick={() => chooseAccent(a.id)}
+              disabled={locked}
+              title={locked ? "Solar+ only" : a.label}
+              className={clsx(
+                "group relative flex flex-col items-center gap-1.5 rounded-xl border-2 p-2 transition",
+                active ? "border-solar" : "border-line/10 hover:border-line/25",
+                locked && "opacity-50",
+              )}
+            >
+              <span className="h-8 w-8 rounded-full ring-2 ring-line/10" style={{ background: a.swatch }} />
+              <span className="text-[10px] font-medium text-muted">{a.label}</span>
+              {locked && (
+                <span className="absolute right-1 top-1 text-muted">
+                  <Icon name="ban" size={11} />
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

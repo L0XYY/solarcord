@@ -13,6 +13,7 @@ import {
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { resolveMember, requirePermission } from "../permissions.js";
+import { postSystemMessage } from "../system.js";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const SOLAR_PLUS_WEEKLY_BOOSTS = 2;
@@ -124,7 +125,7 @@ export async function serverRoutes(app: FastifyInstance) {
     const rows = await prisma.serverMember.findMany({
       where: { serverId: id },
       include: {
-        user: { select: { id: true, username: true, displayName: true, avatarUrl: true, status: true, tag: true, tagBadge: true } },
+        user: { select: { id: true, username: true, displayName: true, avatarUrl: true, status: true, customStatus: true, isBot: true, tag: true, tagBadge: true } },
         roles: { select: { roleId: true } },
       },
       orderBy: { joinedAt: "asc" },
@@ -137,6 +138,22 @@ export async function serverRoutes(app: FastifyInstance) {
       roleIds: m.roles.map((r) => r.roleId),
     }));
     return { members };
+  });
+
+  // Lightweight summary for the server-icon hover card.
+  app.get("/servers/:id/summary", async (req) => {
+    const { id } = req.params as { id: string };
+    await resolveMember(id, userId(req));
+    const [server, online, badgeRows] = await Promise.all([
+      prisma.server.findUnique({
+        where: { id },
+        select: { id: true, name: true, description: true, iconUrl: true, memberCount: true, boostLevel: true, isVerified: true, isPartnered: true, visibility: true, tag: true, tagBadge: true },
+      }),
+      prisma.serverMember.count({ where: { serverId: id, user: { status: { notIn: ["OFFLINE", "INVISIBLE"] } } } }),
+      prisma.serverBadge.findMany({ where: { serverId: id }, select: { type: true } }),
+    ]);
+    if (!server) throw Errors.notFound("Server not found");
+    return { summary: { ...server, onlineCount: online, badgeTypes: badgeRows.map((b) => b.type) } };
   });
 
   app.patch("/servers/:id", async (req) => {
@@ -152,7 +169,11 @@ export async function serverRoutes(app: FastifyInstance) {
       }
     }
 
-    const server = await prisma.server.update({ where: { id }, data: body });
+    // An empty system-channel selection means "off".
+    const data = { ...body };
+    if (data.systemChannelId === "") data.systemChannelId = null;
+
+    const server = await prisma.server.update({ where: { id }, data });
     return { server };
   });
 
@@ -174,7 +195,7 @@ export async function serverRoutes(app: FastifyInstance) {
       await prisma.user.update({ where: { id: uid }, data: { boostsUsed: a.used + 1, boostWindowStart: a.windowStart } });
     }
 
-    const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true } });
+    const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true, systemChannelId: true, announceBoosts: true } });
     const boostCount = (current?.boostCount ?? 0) + 1;
     const server = await prisma.server.update({
       where: { id },
@@ -183,6 +204,12 @@ export async function serverRoutes(app: FastifyInstance) {
     });
     await prisma.auditLog.create({ data: { serverId: id, actorId: uid, action: "server.boost", metadata: { boostCount: server.boostCount, boostLevel: server.boostLevel } } });
     app.io.to(room.server(id)).emit("server:boost", { serverId: id, boostCount: server.boostCount, boostLevel: server.boostLevel });
+
+    if (current?.systemChannelId && current.announceBoosts) {
+      const me = await prisma.user.findUnique({ where: { id: uid }, select: { displayName: true, username: true } });
+      const name = me?.displayName ?? me?.username ?? "Someone";
+      await postSystemMessage(app, current.systemChannelId, uid, `🚀 **${name}** just boosted the server! It now has ${server.boostCount} boost${server.boostCount === 1 ? "" : "s"} (Level ${server.boostLevel}).`);
+    }
     return { server, boosts: { available: a.available === Infinity ? null : a.available - 1, max: a.max === Infinity ? null : a.max } };
   });
 

@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('sc-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+            __html: `(function(){try{var t=localStorage.getItem('sc-theme')||'dark';document.documentElement.setAttribute('data-theme',t);var a=localStorage.getItem('sc-accent');if(a)document.documentElement.setAttribute('data-accent',a);}catch(e){}})();`,
           }}
         />
         <Providers>{children}</Providers>

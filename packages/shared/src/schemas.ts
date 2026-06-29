@@ -72,6 +72,9 @@ export const updateServerSchema = z.object({
   tagBadge: z.string().max(6_000_000).nullable().optional(),
   visibility: serverVisibilitySchema.optional(),
   category: z.string().max(32).nullable().optional(),
+  systemChannelId: z.string().nullable().optional(),
+  announceJoins: z.boolean().optional(),
+  announceBoosts: z.boolean().optional(),
 });
 
 // ── Server boosts ──
@@ -167,6 +170,12 @@ export const createUserBadgeSchema = z.object({
   name: z.string().min(2).max(48),
   description: z.string().max(160).optional(),
   iconUrl: imageRef.optional(),
+});
+
+export const updateUserBadgeSchema = z.object({
+  name: z.string().min(2).max(48).optional(),
+  description: z.string().max(160).optional(),
+  iconUrl: imageRef.nullable().optional(),
 });
 
 export const grantBadgeSchema = z.object({

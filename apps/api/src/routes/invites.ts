@@ -5,6 +5,7 @@ import { createInviteSchema, Permission } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { requirePermission, resolveMember } from "../permissions.js";
+import { postSystemMessage } from "../system.js";
 
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
@@ -99,6 +100,14 @@ export async function inviteRoutes(app: FastifyInstance) {
       prisma.server.update({ where: { id: invite.serverId }, data: { memberCount: { increment: 1 } } }),
       prisma.invite.update({ where: { id: invite.id }, data: { uses: { increment: 1 } } }),
     ]);
+
+    // Announce the join in the server's system channel, if configured.
+    const server = await prisma.server.findUnique({ where: { id: invite.serverId }, select: { systemChannelId: true, announceJoins: true } });
+    if (server?.systemChannelId && server.announceJoins) {
+      const me = await prisma.user.findUnique({ where: { id: uid }, select: { displayName: true, username: true } });
+      const name = me?.displayName ?? me?.username ?? "Someone";
+      await postSystemMessage(app, server.systemChannelId, uid, `👋 **${name}** just joined the server. Welcome!`);
+    }
 
     return { serverId: invite.serverId, alreadyMember: false };
   });

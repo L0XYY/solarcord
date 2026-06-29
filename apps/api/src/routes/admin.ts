@@ -7,6 +7,7 @@ import {
   verifyServerSchema,
   serverBadgeTypeSchema,
   createUserBadgeSchema,
+  updateUserBadgeSchema,
   grantBadgeSchema,
   setStandingSchema,
 } from "@solarcord/shared";
@@ -262,6 +263,17 @@ export async function adminRoutes(app: FastifyInstance) {
       data: { key: body.key, name: body.name, description: body.description ?? "", iconUrl: body.iconUrl },
     });
     return reply.code(201).send({ badge: { id: badge.id, key: badge.key, name: badge.name } });
+  });
+
+  app.patch("/admin/badges/:id", async (req) => {
+    const { id } = req.params as { id: string };
+    const body = updateUserBadgeSchema.parse(req.body);
+    const badge = await prisma.userBadge.update({
+      where: { id },
+      data: { name: body.name, description: body.description, iconUrl: body.iconUrl },
+      select: { id: true, key: true, name: true, description: true, iconUrl: true },
+    });
+    return { badge };
   });
 
   app.post("/admin/badges/:id/grant", async (req) => {

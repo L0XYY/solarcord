@@ -367,6 +367,8 @@ function CustomBadges() {
   const [badges, setBadges] = useState<CustomBadge[]>([]);
   const [form, setForm] = useState({ key: "", name: "", description: "", iconUrl: null as string | null });
   const [grant, setGrant] = useState<Record<string, string>>({});
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "", iconUrl: null as string | null });
   const [err, setErr] = useState<string | null>(null);
 
   const load = () => api<{ badges: CustomBadge[] }>("/admin/badges").then((r) => setBadges(r.badges));
@@ -391,6 +393,20 @@ function CustomBadges() {
     setGrant((g) => ({ ...g, [id]: "" }));
     await load();
   }
+  function startEdit(b: CustomBadge) {
+    setEditing(b.id);
+    setEditForm({ name: b.name, description: b.description ?? "", iconUrl: b.iconUrl });
+  }
+  async function saveEdit(id: string) {
+    await api(`/admin/badges/${id}`, { method: "PATCH", json: { name: editForm.name, description: editForm.description, iconUrl: editForm.iconUrl } }).catch(() => {});
+    setEditing(null);
+    await load();
+  }
+  async function remove(b: CustomBadge) {
+    if (!confirm(`Delete the "${b.name}" badge? It will be removed from all ${b.holders} holders.`)) return;
+    await api(`/admin/badges/${b.id}`, { method: "DELETE" }).catch(() => {});
+    await load();
+  }
 
   return (
     <div>
@@ -413,30 +429,50 @@ function CustomBadges() {
       </div>
 
       <div className="mt-4 space-y-2">
-        {badges.map((b) => (
-          <div key={b.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
-            {b.iconUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={b.iconUrl} alt="" className="h-8 w-8 rounded" />
-            ) : (
-              <div className="grid h-8 w-8 place-items-center rounded bg-night-700 text-xs">★</div>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">{b.name}</p>
-              <p className="truncate text-xs text-muted">{b.holders} holders · {b.key}</p>
+        {badges.map((b) =>
+          editing === b.id ? (
+            <div key={b.id} className="rounded-xl glass p-4">
+              <div className="flex items-start gap-3">
+                <ImageUpload value={editForm.iconUrl} shape="square" maxW={64} maxH={64} format="image/png" label="Icon" onChange={(v) => setEditForm({ ...editForm, iconUrl: v })} />
+                <div className="flex-1 space-y-2">
+                  <input className="field" placeholder="Display name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                  <input className="field" placeholder="Description" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+                </div>
+              </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <button onClick={() => setEditing(null)} className="btn-ghost py-1.5 text-xs">Cancel</button>
+                <button onClick={() => saveEdit(b.id)} disabled={editForm.name.length < 2} className="btn-solar py-1.5 text-xs">Save</button>
+              </div>
             </div>
-            <input
-              className="field max-w-[160px] py-1.5 text-sm"
-              placeholder="grant to @username"
-              value={grant[b.id] ?? ""}
-              onChange={(e) => setGrant((g) => ({ ...g, [b.id]: e.target.value }))}
-              onKeyDown={(e) => e.key === "Enter" && doGrant(b.id)}
-            />
-            <button onClick={() => doGrant(b.id)} className="btn-ghost py-1.5 text-xs">
-              Grant
-            </button>
-          </div>
-        ))}
+          ) : (
+            <div key={b.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
+              {b.iconUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={b.iconUrl} alt="" className="h-8 w-8 rounded" />
+              ) : (
+                <div className="grid h-8 w-8 place-items-center rounded bg-night-700 text-xs">★</div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{b.name}</p>
+                <p className="truncate text-xs text-muted">{b.holders} holders · {b.key}</p>
+              </div>
+              <input
+                className="field max-w-[150px] py-1.5 text-sm"
+                placeholder="grant to @username"
+                value={grant[b.id] ?? ""}
+                onChange={(e) => setGrant((g) => ({ ...g, [b.id]: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && doGrant(b.id)}
+              />
+              <button onClick={() => doGrant(b.id)} className="btn-ghost py-1.5 text-xs">Grant</button>
+              <button onClick={() => startEdit(b)} title="Edit" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-ink">
+                <Icon name="pencil" size={15} />
+              </button>
+              <button onClick={() => remove(b)} title="Delete" className="grid h-8 w-8 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-solar-ember">
+                <Icon name="trash" size={15} />
+              </button>
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

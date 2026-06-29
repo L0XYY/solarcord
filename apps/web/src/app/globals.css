@@ -32,6 +32,44 @@
   --line: 0 0 0;
 }
 
+/* Solar+ accent themes — recolour the accent (buttons, active states, rings,
+   the solar-text gradient). Layered on top of the dark/light base. */
+:root[data-accent="solar"] {
+  --solar: 255 184 77;
+  --solar-glow: 255 154 46;
+  --aurora: 255 184 77;
+}
+:root[data-accent="blurple"] {
+  --solar: 124 136 248;
+  --solar-glow: 88 101 242;
+  --aurora: 124 136 248;
+}
+:root[data-accent="crimson"] {
+  --solar: 240 96 106;
+  --solar-glow: 220 56 66;
+  --aurora: 240 96 106;
+}
+:root[data-accent="mint"] {
+  --solar: 72 214 164;
+  --solar-glow: 36 190 138;
+  --aurora: 72 214 164;
+}
+:root[data-accent="violet"] {
+  --solar: 178 132 255;
+  --solar-glow: 150 94 246;
+  --aurora: 178 132 255;
+}
+:root[data-accent="aqua"] {
+  --solar: 78 206 226;
+  --solar-glow: 38 178 202;
+  --aurora: 78 206 226;
+}
+:root[data-accent="rose"] {
+  --solar: 246 138 196;
+  --solar-glow: 232 96 168;
+  --aurora: 246 138 196;
+}
+
 * {
   box-sizing: border-box;
 }

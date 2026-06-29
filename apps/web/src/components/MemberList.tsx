@@ -45,14 +45,14 @@ export function MemberList({
   // everyone hoisted-roleless falls into "Online". Offline is its own group.
   const hoisted = roles.filter((r) => r.isHoisted && !r.isEveryone).sort((a, b) => b.position - a.position);
 
-  const groups: { key: string; title: string; color?: string; members: MemberView[]; dim: boolean }[] = [];
+  const groups: { key: string; title: string; color?: string; iconUrl?: string | null; members: MemberView[]; dim: boolean }[] = [];
   const onlineMembers = members.filter(isOnline);
   const claimed = new Set<string>();
 
   for (const role of hoisted) {
     const inRole = onlineMembers.filter((m) => !claimed.has(m.id) && hoistRole(m, byId)?.id === role.id);
     inRole.forEach((m) => claimed.add(m.id));
-    if (inRole.length) groups.push({ key: role.id, title: role.name, color: colorToHex(role.color), members: inRole, dim: false });
+    if (inRole.length) groups.push({ key: role.id, title: role.name, color: colorToHex(role.color), iconUrl: role.iconUrl, members: inRole, dim: false });
   }
   const restOnline = onlineMembers.filter((m) => !claimed.has(m.id));
   if (restOnline.length) groups.push({ key: "online", title: "Online", members: restOnline, dim: false });
@@ -65,9 +65,13 @@ export function MemberList({
       {groups.map((g) => (
         <div key={g.key} className="mb-4">
           <p
-            className="px-1 pb-2 text-[11px] font-bold uppercase tracking-wider"
+            className="flex items-center gap-1.5 px-1 pb-2 text-[11px] font-bold uppercase tracking-wider"
             style={{ color: g.color ?? "rgb(var(--muted))" }}
           >
+            {g.iconUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={g.iconUrl} alt="" className="h-3.5 w-3.5 rounded-sm object-contain" />
+            )}
             {g.title} — {g.members.length}
           </p>
           <div className="space-y-0.5">
@@ -95,16 +99,25 @@ export function MemberList({
                   </div>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5">
-                      <span className="truncate text-sm" style={nameColor ? { color: nameColor } : undefined}>
+                      <span className="truncate text-sm font-medium" style={nameColor ? { color: nameColor } : undefined}>
                         {m.nickname ?? displayName(m.user)}
                       </span>
+                      {m.user.isBot && (
+                        <span className="flex items-center gap-0.5 rounded bg-aurora/25 px-1 text-[9px] font-bold uppercase leading-tight text-aurora">
+                          App
+                        </span>
+                      )}
                       {m.user.tag && <ServerTag tag={m.user.tag} badge={m.user.tagBadge} />}
                     </span>
-                    {topRole && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted">
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ background: colorToHex(topRole.color) }} />
-                        {topRole.name}
-                      </span>
+                    {m.user.customStatus ? (
+                      <span className="block truncate text-[11px] text-muted">{m.user.customStatus}</span>
+                    ) : (
+                      topRole && (
+                        <span className="flex items-center gap-1 text-[10px] text-muted">
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ background: colorToHex(topRole.color) }} />
+                          {topRole.name}
+                        </span>
+                      )
                     )}
                   </span>
                 </button>

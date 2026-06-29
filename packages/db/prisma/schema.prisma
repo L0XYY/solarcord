@@ -193,6 +193,9 @@ model Server {
   vanityUrl   String?          @unique
   bannedWords String[]         @default([]) // AutoMod keyword filter
   isRemoved   Boolean          @default(false) // taken down by platform staff
+  systemChannelId String?      // channel for join + boost announcements ("" / null = off)
+  announceJoins   Boolean      @default(true) // post a message when a member joins
+  announceBoosts  Boolean      @default(true) // post a message when the server is boosted
   rules       String[]         @default([]) // server rules shown on the welcome screen
   welcomeMessage String?       // greeting on the welcome/guide screen
   createdAt   DateTime         @default(now())

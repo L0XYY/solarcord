@@ -69,6 +69,8 @@ export interface MemberView {
     displayName: string | null;
     avatarUrl: string | null;
     status: string;
+    customStatus?: string | null;
+    isBot?: boolean;
     tag?: string | null;
     tagBadge?: string | null;
   };

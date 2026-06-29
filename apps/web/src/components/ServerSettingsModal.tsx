@@ -659,6 +659,9 @@ interface OverviewForm {
   bannerUrl: string | null;
   tag: string;
   tagBadge: string | null;
+  systemChannelId: string;
+  announceJoins: boolean;
+  announceBoosts: boolean;
 }
 
 function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => void }) {
@@ -671,7 +674,11 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
     bannerUrl: null,
     tag: "",
     tagBadge: null,
+    systemChannelId: "",
+    announceJoins: true,
+    announceBoosts: true,
   });
+  const [channels, setChannels] = useState<{ id: string; name: string; type: string }[]>([]);
   const [boost, setBoost] = useState({ count: 0, level: 0 });
   const [allowance, setAllowance] = useState<{ isStaff: boolean; solarPlus: boolean; available: number | null; max: number | null; resetAt: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -696,6 +703,10 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
         tagBadge: string | null;
         boostCount: number;
         boostLevel: number;
+        systemChannelId: string | null;
+        announceJoins: boolean;
+        announceBoosts: boolean;
+        channels: { id: string; name: string; type: string }[];
       };
     }>(`/servers/${serverId}`).then(({ server }) => {
       setForm({
@@ -707,7 +718,11 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
         bannerUrl: server.bannerUrl,
         tag: server.tag ?? "",
         tagBadge: server.tagBadge,
+        systemChannelId: server.systemChannelId ?? "",
+        announceJoins: server.announceJoins,
+        announceBoosts: server.announceBoosts,
       });
+      setChannels((server.channels ?? []).filter((c) => c.type === "TEXT" || c.type === "ANNOUNCEMENT"));
       setBoost({ count: server.boostCount, level: server.boostLevel });
     });
 
@@ -737,6 +752,9 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
           bannerUrl: bannerUnlocked ? form.bannerUrl : null,
           tag: form.tag.trim() ? form.tag.trim().toUpperCase() : null,
           tagBadge: form.tagBadge,
+          systemChannelId: form.systemChannelId || null,
+          announceJoins: form.announceJoins,
+          announceBoosts: form.announceBoosts,
         },
       });
       setMsg({ ok: true, text: "Saved." });
@@ -822,6 +840,36 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
             </div>
           ))}
         </div>
+      </div>
+
+      {/* System messages */}
+      <div className="mt-4 rounded-2xl border border-line/10 bg-night-900/40 p-4">
+        <p className="text-sm font-semibold">System messages</p>
+        <p className="mt-0.5 text-xs text-muted">Pick a channel for join &amp; boost announcements.</p>
+        <select
+          className="field mt-3"
+          value={form.systemChannelId}
+          onChange={(e) => setForm({ ...form, systemChannelId: e.target.value })}
+        >
+          <option value="">Off — don&apos;t post announcements</option>
+          {channels.map((c) => (
+            <option key={c.id} value={c.id}>
+              # {c.name}
+            </option>
+          ))}
+        </select>
+        {form.systemChannelId && (
+          <div className="mt-3 space-y-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted">Send a message when someone joins</span>
+              <Toggle on={form.announceJoins} onClick={() => setForm({ ...form, announceJoins: !form.announceJoins })} />
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm text-muted">Send a message when the server is boosted</span>
+              <Toggle on={form.announceBoosts} onClick={() => setForm({ ...form, announceBoosts: !form.announceBoosts })} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Server tag */}
