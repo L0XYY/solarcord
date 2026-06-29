@@ -19,6 +19,8 @@ export interface SelfUser {
   isStaff: boolean;
   standing?: string;
   standingReason?: string | null;
+  emailVerified?: boolean;
+  emailDeadline?: string | null;
 }
 
 interface AuthState {

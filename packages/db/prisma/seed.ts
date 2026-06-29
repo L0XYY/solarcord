@@ -42,17 +42,25 @@ async function main() {
     console.log("Wipe complete.");
   }
 
-  // Ensure the single owner account exists.
+  // Ensure the single owner account exists (and counts as a verified email).
   const loxy = await prisma.user.upsert({
     where: { email: "loxy@solarcord.app" },
-    update: {},
+    update: { emailVerified: true, emailDeadline: null },
     create: {
       email: "loxy@solarcord.app",
       username: "loxy",
       displayName: "loxy",
       passwordHash: hash("loxy12345"),
       isStaff: true,
+      emailVerified: true,
     },
+  });
+
+  // Give every other not-yet-verified account a 1-week grace period to confirm a
+  // real email (idempotent — only sets a deadline where none exists).
+  await prisma.user.updateMany({
+    where: { emailVerified: false, emailDeadline: null },
+    data: { emailDeadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
   });
 
   // Loxy's badges — the Owner crown is exclusive to this account.

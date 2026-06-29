@@ -19,6 +19,9 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const verifyEmailSchema = z.object({ token: z.string().min(10).max(128) });
+export const changeEmailSchema = z.object({ email: z.string().email().max(254) });
+
 // An image reference: an http(s) URL, or an inline data URL from a device upload.
 export const imageRef = z
   .string()

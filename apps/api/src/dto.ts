@@ -103,6 +103,8 @@ export function toSelfUser(u: {
   isStaff: boolean;
   standing?: string;
   standingReason?: string | null;
+  emailVerified?: boolean;
+  emailDeadline?: Date | null;
 }) {
   return {
     id: u.id,
@@ -122,5 +124,7 @@ export function toSelfUser(u: {
     isStaff: u.isStaff,
     standing: u.standing ?? "ALL_GOOD",
     standingReason: u.standingReason ?? null,
+    emailVerified: u.emailVerified ?? false,
+    emailDeadline: u.emailDeadline ? u.emailDeadline.toISOString() : null,
   };
 }

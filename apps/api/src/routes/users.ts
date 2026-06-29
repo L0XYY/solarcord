@@ -1,12 +1,36 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "@solarcord/db";
-import { updateMeSchema, room } from "@solarcord/shared";
+import { updateMeSchema, changeEmailSchema, room } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { toSelfUser } from "../dto.js";
+import { newVerifyToken, verifyLink, sendVerificationEmail, VERIFY_DEADLINE_MS } from "../email.js";
 
 export async function userRoutes(app: FastifyInstance) {
   app.addHook("preHandler", requireAuth);
+
+  // Change email → restarts the verification flow with a fresh 1-week deadline.
+  app.patch("/users/me/email", async (req) => {
+    const uid = userId(req);
+    const { email } = changeEmailSchema.parse(req.body);
+    const lower = email.toLowerCase();
+    const clash = await prisma.user.findFirst({ where: { email: lower, NOT: { id: uid } }, select: { id: true } });
+    if (clash) throw Errors.conflict("That email is already in use.");
+    const { token, expires } = newVerifyToken();
+    const user = await prisma.user.update({
+      where: { id: uid },
+      data: {
+        email: lower,
+        emailVerified: false,
+        emailVerifyToken: token,
+        emailVerifyExpires: expires,
+        emailDeadline: new Date(Date.now() + VERIFY_DEADLINE_MS),
+      },
+    });
+    const link = verifyLink(token);
+    const sent = await sendVerificationEmail(lower, link);
+    return { user: toSelfUser(user), verifyLink: sent ? undefined : link };
+  });
 
   // Update the current user's profile / status.
   app.patch("/users/me", async (req) => {

@@ -22,6 +22,10 @@ const schema = z.object({
   API_PORT: z.coerce.number().default(Number(process.env.PORT) || 4000),
   API_HOST: z.string().default("0.0.0.0"),
   WEB_ORIGIN: z.string().default("http://localhost:3000"),
+  // Email (verification). When RESEND_API_KEY is unset we run in "simulate" mode:
+  // no mail is sent and the verify link is surfaced in-app instead.
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("SolarCord <onboarding@resend.dev>"),
 });
 
 const parsed = schema.safeParse(process.env);

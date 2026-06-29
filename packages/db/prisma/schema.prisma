@@ -97,6 +97,10 @@ model User {
   tagBadge     String? // the tag's badge icon
   isStaff      Boolean        @default(false)
   isSuspended  Boolean        @default(false)
+  emailVerified      Boolean   @default(false)
+  emailVerifyToken   String?   @unique          // one-time token from the verification email
+  emailVerifyExpires DateTime?                   // when that token stops working (24h)
+  emailDeadline      DateTime?                   // verify-by date; past it + unverified ⇒ account closed
   standing       String       @default("ALL_GOOD") // ALL_GOOD | LIMITED | VERY_LIMITED | AT_RISK | SUSPENDED
   standingReason String?      // staff note shown to the member on their standing page
   boostsUsed       Int        @default(0)  // boosts spent in the current weekly window

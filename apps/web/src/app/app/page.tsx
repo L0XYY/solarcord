@@ -21,6 +21,7 @@ import { WelcomeModal } from "@/components/WelcomeModal";
 import { UserSettingsModal } from "@/components/UserSettingsModal";
 import { ProfileCard } from "@/components/ProfileCard";
 import { VideoStage } from "@/components/VideoStage";
+import { EmailVerifyBanner } from "@/components/EmailVerifyBanner";
 import { has, Permission, type ChannelSummary } from "@solarcord/shared";
 import type {
   Channel,
@@ -446,7 +447,9 @@ export default function AppPage() {
       ].some((p) => has(detail.me.permissions, p)));
 
   return (
-    <main className="flex h-screen overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden">
+      <EmailVerifyBanner />
+      <main className="flex min-h-0 flex-1 overflow-hidden">
       <VideoStage />
       <ServerDock
         servers={servers}
@@ -604,7 +607,8 @@ export default function AppPage() {
           onClose={() => setProfileUserId(null)}
         />
       )}
-    </main>
+      </main>
+    </div>
   );
 }
 
