@@ -438,6 +438,18 @@ export default function AppPage() {
     return map;
   }, [members, detail]);
 
+  // People who can be @mentioned in the current server.
+  const mentionables = useMemo(
+    () =>
+      members.map((m) => ({
+        id: m.user.id,
+        username: m.user.username,
+        displayName: m.nickname ?? m.user.displayName,
+        color: roleMeta.get(m.user.id)?.color,
+      })),
+    [members, roleMeta],
+  );
+
   const pendingCount = friends.incoming.length;
 
   if (!ready) {
@@ -547,6 +559,7 @@ export default function AppPage() {
                 currentUserId={user?.id ?? ""}
                 canManageMessages={!isDM && !!user && !!detail && detail.ownerId === user.id}
                 roleMeta={isDM ? undefined : roleMeta}
+                mentionables={isDM ? undefined : mentionables}
                 enableReactions={!isDM}
                 placeholderLabel={isDM && panelChannel ? `Message @${panelChannel.name}` : undefined}
                 onSend={sendMessage}

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import { initials, displayName, formatTime } from "@/lib/ui";
 import { Avatar } from "./Avatar";
@@ -8,6 +8,27 @@ import { ServerTag } from "./ServerTag";
 import type { Channel, Message } from "@/lib/types";
 
 const QUICK_EMOJI = ["👍", "❤️", "😂", "🎉", "🔥", "😮", "😢", "👀"];
+
+export interface Mentionable {
+  id: string;
+  username: string;
+  displayName: string | null;
+  color?: string;
+}
+
+// @everyone, @here, or @username (usernames are [a-z0-9_.]).
+const MENTION_RE = /@everyone\b|@here\b|@([a-z0-9_.]+)/gi;
+
+function escapeRe(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Does this message ping the given user (directly, or via @everyone/@here)?
+function messagePingsUser(content: string, username?: string): boolean {
+  if (/@everyone\b|@here\b/i.test(content)) return true;
+  if (username && new RegExp(`@${escapeRe(username)}\\b`, "i").test(content)) return true;
+  return false;
+}
 
 interface ChatPanelProps {
   channel: Channel | null;
@@ -27,6 +48,7 @@ interface ChatPanelProps {
   onSelectUser?: (userId: string) => void;
   onStartCall?: () => void;
   roleMeta?: Map<string, RoleMeta>;
+  mentionables?: Mentionable[];
 }
 
 export interface RoleMeta {
@@ -52,14 +74,108 @@ export function ChatPanel({
   onSelectUser,
   onStartCall,
   roleMeta,
+  mentionables,
 }: ChatPanelProps) {
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [editing, setEditing] = useState<{ id: string; content: string } | null>(null);
   const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const [mention, setMention] = useState<{ start: number; query: string } | null>(null);
+  const [mentionIdx, setMentionIdx] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // username (lowercase) → mentionable, for rendering @mentions as pills.
+  const mentionMap = useMemo(() => new Map((mentionables ?? []).map((u) => [u.username.toLowerCase(), u])), [mentionables]);
+  const myUsername = useMemo(() => mentionables?.find((u) => u.id === currentUserId)?.username, [mentionables, currentUserId]);
+
+  // Autocomplete suggestions for the @token currently being typed.
+  const suggestions = useMemo(() => {
+    if (!mention || !mentionables) return [] as { kind: "everyone" | "here" | "user"; user?: Mentionable }[];
+    const q = mention.query.toLowerCase();
+    const out: { kind: "everyone" | "here" | "user"; user?: Mentionable }[] = [];
+    if ("everyone".startsWith(q)) out.push({ kind: "everyone" });
+    if ("here".startsWith(q)) out.push({ kind: "here" });
+    for (const u of mentionables) {
+      if (out.length > 9) break;
+      if (u.username.toLowerCase().includes(q) || (u.displayName ?? "").toLowerCase().includes(q)) out.push({ kind: "user", user: u });
+    }
+    return out.slice(0, 8);
+  }, [mention, mentionables]);
+
+  // Render message text with @everyone/@here and @username highlighted.
+  function renderContent(text: string) {
+    const nodes: React.ReactNode[] = [];
+    const re = new RegExp(MENTION_RE);
+    let last = 0;
+    let key = 0;
+    let mm: RegExpExecArray | null;
+    while ((mm = re.exec(text)) !== null) {
+      if (mm.index > last) nodes.push(text.slice(last, mm.index));
+      const token = mm[0];
+      if (/^@everyone$/i.test(token) || /^@here$/i.test(token)) {
+        nodes.push(
+          <span key={key++} className="rounded bg-solar/20 px-1 font-medium text-solar">
+            {token}
+          </span>,
+        );
+      } else {
+        const u = mm[1] ? mentionMap.get(mm[1].toLowerCase()) : undefined;
+        if (u) {
+          nodes.push(
+            <button
+              key={key++}
+              onClick={() => onSelectUser?.(u.id)}
+              className="rounded px-1 font-medium hover:underline"
+              style={{ color: u.color ?? "rgb(var(--aurora))", background: `${u.color ?? "#7c88f8"}22` }}
+            >
+              @{u.displayName ?? u.username}
+            </button>,
+          );
+        } else {
+          nodes.push(token);
+        }
+      }
+      last = mm.index + token.length;
+    }
+    if (last < text.length) nodes.push(text.slice(last));
+    return nodes;
+  }
+
+  function applyMention(insert: string) {
+    if (!mention) return;
+    const after = value.slice(mention.start + 1 + mention.query.length);
+    const head = `${value.slice(0, mention.start)}@${insert} `;
+    setValue(head + after);
+    setMention(null);
+    requestAnimationFrame(() => {
+      const el = inputRef.current;
+      if (el) {
+        el.focus();
+        const pos = head.length;
+        el.setSelectionRange(pos, pos);
+      }
+    });
+  }
+
+  function pickSuggestion(s: { kind: "everyone" | "here" | "user"; user?: Mentionable }) {
+    applyMention(s.kind === "user" ? s.user!.username : s.kind);
+  }
+
+  function onComposerChange(el: HTMLTextAreaElement) {
+    setValue(el.value);
+    onTyping();
+    const caret = el.selectionStart ?? el.value.length;
+    const before = el.value.slice(0, caret);
+    const match = /(^|\s)@([a-z0-9_.]*)$/i.exec(before);
+    if (match && mentionables) {
+      setMention({ start: caret - match[2].length - 1, query: match[2] });
+      setMentionIdx(0);
+    } else {
+      setMention(null);
+    }
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
@@ -155,9 +271,16 @@ export function ChatPanel({
           const mine = m.author.id === currentUserId;
           const isEditing = editing?.id === m.id;
           const meta = roleMeta?.get(m.author.id);
+          const pingsMe = !mine && messagePingsUser(m.content, myUsername);
 
           return (
-            <div key={m.id} className="group relative flex animate-msg gap-3 rounded-lg px-2 py-0.5 hover:bg-night-800/40">
+            <div
+              key={m.id}
+              className={clsx(
+                "group relative flex animate-msg gap-3 rounded-lg py-0.5 hover:bg-night-800/40",
+                pingsMe ? "border-l-2 border-solar bg-solar/[0.07] pl-[14px] pr-2" : "px-2",
+              )}
+            >
               {/* Reply preview line */}
               {m.replyTo && (
                 <div className="absolute -top-0.5 left-14 flex items-center gap-1 text-xs text-muted">
@@ -232,7 +355,7 @@ export function ChatPanel({
                   </div>
                 ) : (
                   <p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed text-ink/90">
-                    {m.content}
+                    {renderContent(m.content)}
                     {m.editedAt && <span className="ml-1 text-[10px] text-muted">(edited)</span>}
                   </p>
                 )}
@@ -337,18 +460,71 @@ export function ChatPanel({
           e.preventDefault();
           void submit();
         }}
-        className="px-4 pb-4 pt-1"
+        className="relative px-4 pb-4 pt-1"
       >
+        {/* @mention autocomplete */}
+        {mention && suggestions.length > 0 && (
+          <div className="absolute bottom-full left-4 right-4 mb-1 overflow-hidden rounded-xl border border-line/10 bg-night-800/95 py-1 shadow-glass backdrop-blur-xl">
+            <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted">Members</p>
+            {suggestions.map((s, i) => (
+              <button
+                key={s.kind === "user" ? s.user!.id : s.kind}
+                type="button"
+                onMouseEnter={() => setMentionIdx(i)}
+                onClick={() => pickSuggestion(s)}
+                className={clsx(
+                  "flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm",
+                  i === mentionIdx ? "bg-line/10 text-ink" : "text-muted hover:bg-night-700/60",
+                )}
+              >
+                {s.kind === "user" ? (
+                  <>
+                    <Avatar name={s.user!.displayName ?? s.user!.username} src={null} size={20} />
+                    <span className="font-medium" style={s.user!.color ? { color: s.user!.color } : undefined}>
+                      {s.user!.displayName ?? s.user!.username}
+                    </span>
+                    <span className="text-xs text-muted">@{s.user!.username}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="grid h-5 w-5 place-items-center rounded-full bg-solar/20 text-[10px] font-bold text-solar">@</span>
+                    <span className="font-medium text-solar">@{s.kind}</span>
+                    <span className="text-xs text-muted">{s.kind === "everyone" ? "Notify everyone here" : "Notify online members"}</span>
+                  </>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
         <div className={clsx("glass flex items-center gap-2 px-4 py-2", replyTo ? "rounded-b-2xl" : "rounded-2xl")}>
           <textarea
             ref={inputRef}
             rows={1}
             value={value}
-            onChange={(e) => {
-              setValue(e.target.value);
-              onTyping();
-            }}
+            onChange={(e) => onComposerChange(e.currentTarget)}
             onKeyDown={(e) => {
+              if (mention && suggestions.length > 0) {
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setMentionIdx((i) => (i + 1) % suggestions.length);
+                  return;
+                }
+                if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setMentionIdx((i) => (i - 1 + suggestions.length) % suggestions.length);
+                  return;
+                }
+                if (e.key === "Enter" || e.key === "Tab") {
+                  e.preventDefault();
+                  pickSuggestion(suggestions[mentionIdx]!);
+                  return;
+                }
+                if (e.key === "Escape") {
+                  e.preventDefault();
+                  setMention(null);
+                  return;
+                }
+              }
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 void submit();
