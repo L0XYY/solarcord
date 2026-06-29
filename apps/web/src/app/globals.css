@@ -70,6 +70,33 @@
   --aurora: 246 138 196;
 }
 
+/* When any accent theme is active, wash the whole app in a matching gradient.
+   The default (no data-accent) keeps the clean monochrome look. */
+:root[data-accent] body {
+  background:
+    radial-gradient(1100px 700px at 85% -12%, rgb(var(--solar) / 0.18), transparent 60%),
+    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.14), transparent 55%),
+    radial-gradient(900px 700px at 50% 118%, rgb(var(--aurora) / 0.12), transparent 60%),
+    rgb(var(--night-900));
+  background-attachment: fixed;
+}
+/* Light base keeps the gradient subtler so text stays readable. */
+:root[data-theme="light"][data-accent] body {
+  background:
+    radial-gradient(1100px 700px at 85% -12%, rgb(var(--solar) / 0.12), transparent 60%),
+    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.1), transparent 55%),
+    radial-gradient(900px 700px at 50% 118%, rgb(var(--aurora) / 0.08), transparent 60%),
+    rgb(var(--night-900));
+  background-attachment: fixed;
+}
+/* Under an accent, gradient headings pick up the theme hue. */
+:root[data-accent] .solar-text {
+  background: linear-gradient(120deg, rgb(var(--solar)), rgb(var(--solar-glow)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 * {
   box-sizing: border-box;
 }
