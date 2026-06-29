@@ -12,7 +12,7 @@ import { AccountStandingPanel } from "./AccountStanding";
 import { BadgeIcon } from "./BadgeIcon";
 import { Icon, type IconName } from "./Icon";
 
-type Tab = "profile" | "standing" | "appearance";
+type Tab = "profile" | "standing" | "solarplus" | "appearance";
 
 const NAV: { section: string; items: { id: Tab; label: string; icon: IconName }[] }[] = [
   {
@@ -20,6 +20,7 @@ const NAV: { section: string; items: { id: Tab; label: string; icon: IconName }[
     items: [
       { id: "profile", label: "My Profile", icon: "smile" },
       { id: "standing", label: "Account Standing", icon: "shield" },
+      { id: "solarplus", label: "Solar+", icon: "megaphone" },
     ],
   },
   {
@@ -104,6 +105,7 @@ export function UserSettingsModal({ onClose }: { onClose: () => void }) {
           </button>
           {tab === "profile" && <ProfileTab user={user} accessToken={accessToken} onSaved={(u) => setAuth(accessToken!, u)} />}
           {tab === "standing" && <AccountStandingPanel standing={user.standing} reason={user.standingReason} />}
+          {tab === "solarplus" && <SolarPlusPanel />}
           {tab === "appearance" && <AppearanceTab />}
         </div>
       </div>
@@ -293,6 +295,82 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         onChange={(e) => onChange(e.target.value)}
         className="h-10 w-14 cursor-pointer rounded-lg border border-line/15 bg-transparent"
       />
+    </div>
+  );
+}
+
+const SOLAR_PLUS_PERKS: { title: string; desc: string }[] = [
+  { title: "2 server boosts every week", desc: "Power up your favourite communities and unlock perks for everyone." },
+  { title: "Custom accent themes", desc: "Recolour the whole app with exclusive Solar+ themes." },
+  { title: "The Solar+ badge", desc: "Show off the flame badge next to your name." },
+  { title: "Bigger uploads & HD streaming", desc: "More room for files and crisper screen shares." },
+];
+
+function SolarPlusPanel() {
+  const [status, setStatus] = useState<{ solarPlus: boolean; available: number | null; max: number | null } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = () =>
+    api<{ boosts: { solarPlus: boolean; available: number | null; max: number | null } }>("/users/me/boosts")
+      .then((r) => setStatus(r.boosts))
+      .catch(() => {});
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function subscribe() {
+    setBusy(true);
+    await api("/users/me/solar-plus", { method: "POST" }).catch(() => {});
+    await load();
+    setBusy(false);
+  }
+  async function cancel() {
+    setBusy(true);
+    await api("/users/me/solar-plus", { method: "DELETE" }).catch(() => {});
+    await load();
+    setBusy(false);
+  }
+
+  const active = status?.solarPlus;
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center gap-2">
+        <BadgeIcon badge="solar_plus" size={26} />
+        <h3 className="text-lg font-extrabold">Solar+</h3>
+        {active && <span className="rounded-full bg-solar/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-solar">Active</span>}
+      </div>
+      <p className="mt-1 text-sm text-muted">
+        {active
+          ? `You're a Solar+ member — enjoy your perks. You have ${status?.available ?? 0}/${status?.max ?? 2} boosts left this week.`
+          : "Upgrade to Solar+ to unlock boosts, themes and more."}
+      </p>
+
+      <div className="mt-5 overflow-hidden rounded-2xl glass">
+        <div className="h-1.5 w-full bg-gradient-to-r from-solar to-solar-glow" />
+        <div className="space-y-3 p-5">
+          {SOLAR_PLUS_PERKS.map((p) => (
+            <div key={p.title} className="flex items-start gap-3">
+              <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-solar/20 text-[11px] font-bold text-solar">✓</span>
+              <div>
+                <p className="text-sm font-semibold">{p.title}</p>
+                <p className="text-xs text-muted">{p.desc}</p>
+              </div>
+            </div>
+          ))}
+
+          {active ? (
+            <button onClick={cancel} disabled={busy} className="btn-ghost mt-2 w-full text-sm">
+              {busy ? "…" : "Cancel Solar+"}
+            </button>
+          ) : (
+            <button onClick={subscribe} disabled={busy} className="btn-solar mt-2 w-full text-sm">
+              {busy ? "Activating…" : "Get Solar+"}
+            </button>
+          )}
+        </div>
+      </div>
+      {status === null && <p className="mt-3 text-xs text-muted">Loading…</p>}
     </div>
   );
 }

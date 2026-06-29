@@ -9,6 +9,28 @@ import { newVerifyToken, verifyLink, sendVerificationEmail, VERIFY_DEADLINE_MS }
 export async function userRoutes(app: FastifyInstance) {
   app.addHook("preHandler", requireAuth);
 
+  // Activate Solar+ for the current user (grants the solar_plus badge → boosts,
+  // themes, the badge on your profile). No billing wired up yet, so this just
+  // turns it on.
+  app.post("/users/me/solar-plus", async (req) => {
+    const uid = userId(req);
+    const badge = await prisma.userBadge.findUnique({ where: { key: "solar_plus" }, select: { id: true } });
+    if (!badge) throw Errors.notFound("Solar+ isn't available right now");
+    await prisma.userBadgeLink.upsert({
+      where: { userId_badgeId: { userId: uid, badgeId: badge.id } },
+      update: {},
+      create: { userId: uid, badgeId: badge.id },
+    });
+    return { ok: true, solarPlus: true };
+  });
+
+  app.delete("/users/me/solar-plus", async (req) => {
+    const uid = userId(req);
+    const badge = await prisma.userBadge.findUnique({ where: { key: "solar_plus" }, select: { id: true } });
+    if (badge) await prisma.userBadgeLink.deleteMany({ where: { userId: uid, badgeId: badge.id } });
+    return { ok: true, solarPlus: false };
+  });
+
   // Change email → restarts the verification flow with a fresh 1-week deadline.
   app.patch("/users/me/email", async (req) => {
     const uid = userId(req);
