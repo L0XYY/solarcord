@@ -196,6 +196,12 @@ export default function AppPage() {
     const onVoiceChannelUpdate = (d: { channelId: string; users: Parameters<typeof setChannelOccupants>[1] }) => {
       setChannelOccupants(d.channelId, d.users);
     };
+    const onMemberUpdate = (d: { serverId: string; userId: string; roleIds: string[] }) => {
+      setMembers((prev) => prev.map((mb) => (mb.user.id === d.userId ? { ...mb, roleIds: d.roleIds } : mb)));
+    };
+    const onServerBoost = (d: { serverId: string; boostCount: number; boostLevel: number }) => {
+      setDetail((dt) => (dt && dt.id === d.serverId ? { ...dt, boostCount: d.boostCount, boostLevel: d.boostLevel } : dt));
+    };
 
     socket.on("message:create", onMessage);
     socket.on("message:update", onMessageUpdate);
@@ -210,6 +216,8 @@ export default function AppPage() {
     socket.on("conversation:new", onConversationNew);
     socket.on("voice:incoming", onIncomingCall);
     socket.on("voice:channel-update", onVoiceChannelUpdate);
+    socket.on("member:update", onMemberUpdate);
+    socket.on("server:boost", onServerBoost);
 
     return () => {
       socket.off("message:create", onMessage);
@@ -225,6 +233,8 @@ export default function AppPage() {
       socket.off("conversation:new", onConversationNew);
       socket.off("voice:incoming", onIncomingCall);
       socket.off("voice:channel-update", onVoiceChannelUpdate);
+      socket.off("member:update", onMemberUpdate);
+      socket.off("server:boost", onServerBoost);
     };
   }, [ready, user, refetchFriends, refetchConversations]);
 
@@ -532,7 +542,7 @@ export default function AppPage() {
             )}
           </div>
 
-          {view === "server" && <MemberList members={members} onSelectUser={(id) => setProfileUserId(id)} />}
+          {view === "server" && <MemberList members={members} roles={detail?.roles ?? []} onSelectUser={(id) => setProfileUserId(id)} />}
         </>
       )}
 

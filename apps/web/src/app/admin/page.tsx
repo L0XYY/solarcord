@@ -12,7 +12,7 @@ import { Logo } from "@/components/Logo";
 import { Icon, type IconName } from "@/components/Icon";
 import { SERVER_BADGE_INFO, type ServerBadgeType, ACCOUNT_STANDINGS, ACCOUNT_STANDING_INFO, type AccountStanding } from "@solarcord/shared";
 
-type Tab = "overview" | "users" | "servers" | "badges" | "reports";
+type Tab = "overview" | "users" | "servers" | "badges" | "reports" | "logs";
 
 const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: "overview", label: "Overview", icon: "home" },
@@ -20,6 +20,7 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: "servers", label: "Servers", icon: "compass" },
   { id: "badges", label: "Badges", icon: "megaphone" },
   { id: "reports", label: "Reports", icon: "flag" },
+  { id: "logs", label: "Audit Logs", icon: "book" },
 ];
 
 export default function AdminPage() {
@@ -99,6 +100,7 @@ export default function AdminPage() {
         {tab === "servers" && <Servers />}
         {tab === "badges" && <Badges />}
         {tab === "reports" && <Reports />}
+        {tab === "logs" && <Logs />}
       </div>
     </main>
   );
@@ -489,6 +491,125 @@ function Reports() {
               <p className="mt-3 rounded-xl bg-night-900/50 p-3 text-sm text-muted">{r.reason}</p>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface AdminLog {
+  id: string;
+  action: string;
+  actor: { id: string; username: string; displayName: string | null } | null;
+  server: { id: string; name: string } | null;
+  targetId: string | null;
+  metadata: unknown;
+  createdAt: string;
+}
+
+const LOG_FILTERS: { id: string; label: string; prefix?: string }[] = [
+  { id: "all", label: "All" },
+  { id: "boost", label: "Boosts", prefix: "server.boost" },
+  { id: "member.role", label: "Roles", prefix: "member.role" },
+  { id: "member", label: "Moderation", prefix: "member" },
+  { id: "channel", label: "Channels", prefix: "channel" },
+];
+
+const ACTION_LABEL: Record<string, string> = {
+  "server.boost": "boosted the server",
+  "member.role.add": "added a role to",
+  "member.role.remove": "removed a role from",
+  "member.kick": "kicked a member",
+  "member.ban": "banned a member",
+  "member.unban": "unbanned a member",
+  "member.warn": "warned a member",
+  "member.timeout": "timed out a member",
+  "channel.create": "created a channel",
+  "channel.delete": "deleted a channel",
+  "role.create": "created a role",
+  "role.update": "updated a role",
+  "role.delete": "deleted a role",
+  "automod.update": "updated AutoMod",
+  "bot.add": "added a bot",
+};
+
+function logIcon(action: string): IconName {
+  if (action.startsWith("server.boost")) return "compass";
+  if (action.startsWith("member.role") || action.startsWith("role")) return "shield";
+  if (action.startsWith("member")) return "ban";
+  if (action.startsWith("channel")) return "hash";
+  if (action.startsWith("bot")) return "bot";
+  return "book";
+}
+
+function timeAgo(iso: string): string {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  return `${Math.floor(s / 86400)}d ago`;
+}
+
+function Logs() {
+  const [logs, setLogs] = useState<AdminLog[]>([]);
+  const [filter, setFilter] = useState("all");
+  const load = (f: string) => {
+    const prefix = LOG_FILTERS.find((x) => x.id === f)?.prefix;
+    const qs = prefix ? `?action=${encodeURIComponent(prefix)}&limit=100` : "?limit=100";
+    return api<{ logs: AdminLog[] }>(`/admin/logs${qs}`).then((r) => setLogs(r.logs));
+  };
+  useEffect(() => {
+    void load(filter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  return (
+    <div>
+      <h1 className="text-2xl font-extrabold">Audit Logs</h1>
+      <p className="mt-1 text-sm text-muted">Everything happening across SolarCord — boosts, role changes, moderation and more.</p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {LOG_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => setFilter(f.id)}
+            className={clsx(
+              "rounded-full px-3 py-1.5 text-xs font-medium transition",
+              filter === f.id ? "bg-solar/15 text-solar" : "bg-night-700/60 text-muted hover:text-ink",
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {logs.length === 0 ? (
+        <p className="mt-6 text-sm text-muted">No logs yet.</p>
+      ) : (
+        <div className="mt-4 space-y-1">
+          {logs.map((l) => {
+            const meta = (l.metadata ?? {}) as Record<string, unknown>;
+            return (
+              <div key={l.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-night-700 text-muted">
+                  <Icon name={logIcon(l.action)} size={16} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm">
+                    <span className="font-semibold">{l.actor ? displayName(l.actor) : "System"}</span>{" "}
+                    <span className="text-muted">{ACTION_LABEL[l.action] ?? l.action}</span>
+                    {typeof meta.roleName === "string" && <span className="font-medium"> · {meta.roleName}</span>}
+                    {typeof meta.boostCount === "number" && <span className="text-muted"> · now {meta.boostCount} boosts (Lvl {String(meta.boostLevel ?? "")})</span>}
+                  </p>
+                  <p className="truncate text-xs text-muted">
+                    {l.server ? l.server.name : "Platform"}
+                    {l.targetId ? ` · target ${l.targetId.slice(0, 8)}…` : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] text-muted">{timeAgo(l.createdAt)}</span>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

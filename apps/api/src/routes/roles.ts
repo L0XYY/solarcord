@@ -1,9 +1,15 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "@solarcord/db";
-import { createRoleSchema, updateRoleSchema, Permission, toBits } from "@solarcord/shared";
+import { createRoleSchema, updateRoleSchema, Permission, toBits, room } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { requirePermission, resolveMember, type MemberContext } from "../permissions.js";
+
+// Re-read a member's current role ids and broadcast the change to the server room.
+async function broadcastMemberRoles(app: FastifyInstance, serverId: string, memberId: string, targetUserId: string) {
+  const links = await prisma.memberRole.findMany({ where: { memberId }, select: { roleId: true } });
+  app.io.to(room.server(serverId)).emit("member:update", { serverId, userId: targetUserId, roleIds: links.map((l) => l.roleId) });
+}
 
 // Non-owners can only grant permission bits they already hold.
 function assertNoElevation(ctx: MemberContext, newPerms: string) {
@@ -113,6 +119,8 @@ export async function roleRoutes(app: FastifyInstance) {
       update: {},
       create: { memberId: member.id, roleId },
     });
+    await prisma.auditLog.create({ data: { serverId: id, actorId: userId(req), action: "member.role.add", targetId: targetUserId, metadata: { roleId, roleName: role.name } } });
+    await broadcastMemberRoles(app, id, member.id, targetUserId);
     return reply.code(204).send();
   });
 
@@ -132,6 +140,8 @@ export async function roleRoutes(app: FastifyInstance) {
     if (!member) throw Errors.notFound("Member not found");
 
     await prisma.memberRole.deleteMany({ where: { memberId: member.id, roleId } });
+    await prisma.auditLog.create({ data: { serverId: id, actorId: userId(req), action: "member.role.remove", targetId: targetUserId, metadata: { roleId, roleName: role.name } } });
+    await broadcastMemberRoles(app, id, member.id, targetUserId);
     return reply.code(204).send();
   });
 }

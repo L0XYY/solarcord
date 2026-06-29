@@ -99,6 +99,8 @@ model User {
   isSuspended  Boolean        @default(false)
   standing       String       @default("ALL_GOOD") // ALL_GOOD | LIMITED | VERY_LIMITED | AT_RISK | SUSPENDED
   standingReason String?      // staff note shown to the member on their standing page
+  boostsUsed       Int        @default(0)  // boosts spent in the current weekly window
+  boostWindowStart DateTime?               // start of the current 7-day boost allowance window
   isBot        Boolean        @default(false)
   botOwnerId   String? // for bot users: the developer who owns them
   twoFactorSecret String?

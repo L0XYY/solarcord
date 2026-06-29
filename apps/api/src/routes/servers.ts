@@ -8,13 +8,55 @@ import {
   Permission,
   BANNER_BOOST_REQUIREMENT,
   boostLevelFor,
+  room,
 } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { resolveMember, requirePermission } from "../permissions.js";
 
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const SOLAR_PLUS_WEEKLY_BOOSTS = 2;
+
+// Resolve a user's boost allowance. Staff get unlimited; Solar+ members get a
+// weekly pool; everyone else gets none. Returns the (possibly reset) window too.
+async function boostAllowance(uid: string) {
+  const u = await prisma.user.findUnique({
+    where: { id: uid },
+    select: { isStaff: true, boostsUsed: true, boostWindowStart: true, badges: { where: { badge: { key: "solar_plus" } }, select: { id: true } } },
+  });
+  if (!u) throw Errors.notFound("User not found");
+  const solarPlus = u.badges.length > 0;
+  const now = new Date();
+  let windowStart = u.boostWindowStart ?? null;
+  let used = u.boostsUsed;
+  // Roll the window forward if a week has elapsed.
+  if (!windowStart || now.getTime() - windowStart.getTime() >= WEEK_MS) {
+    windowStart = now;
+    used = 0;
+  }
+  const max = u.isStaff ? Infinity : solarPlus ? SOLAR_PLUS_WEEKLY_BOOSTS : 0;
+  const available = max === Infinity ? Infinity : Math.max(0, max - used);
+  const resetAt = new Date(windowStart.getTime() + WEEK_MS);
+  return { isStaff: u.isStaff, solarPlus, used, max, available, windowStart, resetAt };
+}
+
 export async function serverRoutes(app: FastifyInstance) {
   app.addHook("preHandler", requireAuth);
+
+  // How many boosts the current user has available this week.
+  app.get("/users/me/boosts", async (req) => {
+    const a = await boostAllowance(userId(req));
+    return {
+      boosts: {
+        isStaff: a.isStaff,
+        solarPlus: a.solarPlus,
+        used: a.used,
+        max: a.max === Infinity ? null : a.max,
+        available: a.available === Infinity ? null : a.available,
+        resetAt: a.resetAt.toISOString(),
+      },
+    };
+  });
 
   // List servers the current user belongs to.
   app.get("/servers", async (req) => {
@@ -114,10 +156,24 @@ export async function serverRoutes(app: FastifyInstance) {
     return { server };
   });
 
-  // Boost the server (any member). Increments the count and recomputes the level.
+  // Boost the server. Staff are unlimited; Solar+ members spend from their weekly
+  // pool of 2; everyone else can't boost (this is what stops infinite spam).
   app.post("/servers/:id/boost", async (req) => {
     const { id } = req.params as { id: string };
-    await resolveMember(id, userId(req));
+    const uid = userId(req);
+    await resolveMember(id, uid);
+
+    const a = await boostAllowance(uid);
+    if (!a.isStaff) {
+      if (!a.solarPlus) throw Errors.forbidden("Boosting is a Solar+ perk. Subscribe to Solar+ to get 2 boosts every week.");
+      if (a.available <= 0) {
+        const days = Math.max(1, Math.ceil((a.resetAt.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+        throw Errors.forbidden(`You've used both of your weekly Solar+ boosts. They refresh in ${days} day${days === 1 ? "" : "s"}.`);
+      }
+      // Spend a boost from the (possibly rolled-over) weekly window.
+      await prisma.user.update({ where: { id: uid }, data: { boostsUsed: a.used + 1, boostWindowStart: a.windowStart } });
+    }
+
     const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true } });
     const boostCount = (current?.boostCount ?? 0) + 1;
     const server = await prisma.server.update({
@@ -125,7 +181,9 @@ export async function serverRoutes(app: FastifyInstance) {
       data: { boostCount, boostLevel: boostLevelFor(boostCount) },
       select: { boostCount: true, boostLevel: true },
     });
-    return { server };
+    await prisma.auditLog.create({ data: { serverId: id, actorId: uid, action: "server.boost", metadata: { boostCount: server.boostCount, boostLevel: server.boostLevel } } });
+    app.io.to(room.server(id)).emit("server:boost", { serverId: id, boostCount: server.boostCount, boostLevel: server.boostLevel });
+    return { server, boosts: { available: a.available === Infinity ? null : a.available - 1, max: a.max === Infinity ? null : a.max } };
   });
 
   // Welcome/guide screen (rules + greeting) — readable by any member.

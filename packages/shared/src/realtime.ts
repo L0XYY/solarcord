@@ -55,6 +55,10 @@ export interface ServerToClientEvents {
   "reaction:remove": (data: { channelId: string; messageId: string; emoji: string; userId: string }) => void;
   "typing:start": (data: { channelId: string; userId: string }) => void;
   "presence:update": (data: { userId: string; status: PresenceStatus }) => void;
+  // A member's roles changed — clients update the member list live.
+  "member:update": (data: { serverId: string; userId: string; roleIds: string[] }) => void;
+  // A server's boost count changed.
+  "server:boost": (data: { serverId: string; boostCount: number; boostLevel: number }) => void;
   // Friends & DMs
   "friend:request": (data: { from: PublicUser }) => void;
   "friend:update": () => void;

@@ -138,6 +138,32 @@ export async function adminRoutes(app: FastifyInstance) {
     return reply.code(204).send();
   });
 
+  // ── Audit logs (platform-wide) ──
+  app.get("/admin/logs", async (req) => {
+    const q = adminListQuery.parse(req.query);
+    const action = (req.query as { action?: string }).action;
+    const logs = await prisma.auditLog.findMany({
+      where: action ? { action: { startsWith: action } } : {},
+      include: {
+        actor: { select: pubSelect },
+        server: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: q.limit,
+    });
+    return {
+      logs: logs.map((l) => ({
+        id: l.id,
+        action: l.action,
+        actor: l.actor,
+        server: l.server,
+        targetId: l.targetId,
+        metadata: l.metadata,
+        createdAt: l.createdAt.toISOString(),
+      })),
+    };
+  });
+
   // ── Badge applications ──
   app.get("/admin/badge-applications", async (req) => {
     const status = (req.query as { status?: string }).status ?? "PENDING";

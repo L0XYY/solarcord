@@ -673,12 +673,15 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
     tagBadge: null,
   });
   const [boost, setBoost] = useState({ count: 0, level: 0 });
+  const [allowance, setAllowance] = useState<{ isStaff: boolean; solarPlus: boolean; available: number | null; max: number | null; resetAt: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [boosting, setBoosting] = useState(false);
+  const [boostErr, setBoostErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const bannerUnlocked = boost.count >= BANNER_BOOST_REQUIREMENT;
+  const canBoost = !!allowance && (allowance.available === null || allowance.available > 0);
 
   const load = () =>
     api<{
@@ -708,8 +711,14 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
       setBoost({ count: server.boostCount, level: server.boostLevel });
     });
 
+  const loadAllowance = () =>
+    api<{ boosts: { isStaff: boolean; solarPlus: boolean; available: number | null; max: number | null; resetAt: string } }>("/users/me/boosts")
+      .then((r) => setAllowance(r.boosts))
+      .catch(() => {});
+
   useEffect(() => {
     void load().finally(() => setLoaded(true));
+    void loadAllowance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverId]);
 
@@ -741,10 +750,14 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
 
   async function doBoost() {
     setBoosting(true);
+    setBoostErr(null);
     try {
       const { server } = await api<{ server: { boostCount: number; boostLevel: number } }>(`/servers/${serverId}/boost`, { method: "POST" });
       setBoost({ count: server.boostCount, level: server.boostLevel });
+      await loadAllowance();
       onSaved();
+    } catch (e) {
+      setBoostErr(e instanceof ApiError ? e.message : "Couldn't boost right now.");
     } finally {
       setBoosting(false);
     }
@@ -786,12 +799,21 @@ function OverviewTab({ serverId, onSaved }: { serverId: string; onSaved: () => v
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold">Server Boost · Level {boost.level}</p>
-            <p className="text-xs text-muted">{boost.count} boosts</p>
+            <p className="text-xs text-muted">
+              {boost.count} boosts
+              {allowance &&
+                (allowance.isStaff
+                  ? " · Staff: unlimited boosts"
+                  : allowance.solarPlus
+                    ? ` · You have ${allowance.available ?? 0}/${allowance.max ?? 0} Solar+ boosts left this week`
+                    : " · Boosting is a Solar+ perk")}
+            </p>
           </div>
-          <button onClick={doBoost} disabled={boosting} className="btn-solar text-sm">
+          <button onClick={doBoost} disabled={boosting || !canBoost} title={!canBoost ? "No boosts available" : undefined} className="btn-solar text-sm disabled:opacity-50">
             {boosting ? "Boosting…" : "Boost server"}
           </button>
         </div>
+        {boostErr && <p className="mt-2 text-xs text-solar-ember">{boostErr}</p>}
         <div className="mt-3 space-y-1">
           {BOOST_TIERS.map((t) => (
             <div key={t.level} className={clsx("flex items-center gap-2 text-xs", boost.count >= t.required ? "text-emerald-400" : "text-muted")}>
