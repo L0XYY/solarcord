@@ -97,6 +97,8 @@ model User {
   tagBadge     String? // the tag's badge icon
   isStaff      Boolean        @default(false)
   isSuspended  Boolean        @default(false)
+  standing       String       @default("ALL_GOOD") // ALL_GOOD | LIMITED | VERY_LIMITED | AT_RISK | SUSPENDED
+  standingReason String?      // staff note shown to the member on their standing page
   isBot        Boolean        @default(false)
   botOwnerId   String? // for bot users: the developer who owns them
   twoFactorSecret String?

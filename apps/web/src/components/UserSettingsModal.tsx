@@ -3,12 +3,29 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, type SelfUser } from "@/lib/store";
-import { statusColor } from "@/lib/ui";
+import { statusColor, initials, displayName as displayNameOf } from "@/lib/ui";
 import { getTheme, setTheme, type Theme } from "@/lib/theme";
+import { ACCOUNT_STANDING_INFO, type AccountStanding } from "@solarcord/shared";
 import { ImageUpload } from "./ImageUpload";
 import { ProfileCardView, type ProfileViewData } from "./ProfileCard";
+import { AccountStandingPanel } from "./AccountStanding";
+import { Icon, type IconName } from "./Icon";
 
-type Tab = "profile" | "appearance";
+type Tab = "profile" | "standing" | "appearance";
+
+const NAV: { section: string; items: { id: Tab; label: string; icon: IconName }[] }[] = [
+  {
+    section: "User settings",
+    items: [
+      { id: "profile", label: "My Profile", icon: "smile" },
+      { id: "standing", label: "Account Standing", icon: "shield" },
+    ],
+  },
+  {
+    section: "App settings",
+    items: [{ id: "appearance", label: "Appearance", icon: "settings" }],
+  },
+];
 
 const STATUSES: { value: string; label: string }[] = [
   { value: "ONLINE", label: "Online" },
@@ -18,41 +35,75 @@ const STATUSES: { value: string; label: string }[] = [
 ];
 
 export function UserSettingsModal({ onClose }: { onClose: () => void }) {
-  const { user, accessToken, setAuth } = useAuth();
+  const { user, accessToken, setAuth, clear } = useAuth();
   const [tab, setTab] = useState<Tab>("profile");
 
   if (!user) return null;
 
+  const standing = (user.standing as AccountStanding) ?? "ALL_GOOD";
+  const sInfo = ACCOUNT_STANDING_INFO[standing] ?? ACCOUNT_STANDING_INFO.ALL_GOOD;
+
   return (
-    <div className="fixed inset-0 z-50 flex bg-night-900/70 backdrop-blur-sm" onClick={onClose}>
-      <div className="m-auto flex h-[80vh] w-full max-w-3xl overflow-hidden rounded-2xl glass-strong shadow-glass" onClick={(e) => e.stopPropagation()}>
-        <div className="w-48 shrink-0 border-r border-line/10 bg-night-900/30 p-4">
-          <p className="px-2 text-[11px] font-bold uppercase tracking-wider text-muted">User settings</p>
-          <nav className="mt-3 space-y-1">
-            {(["profile", "appearance"] as Tab[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={clsx(
-                  "w-full rounded-lg px-3 py-2 text-left text-sm font-medium capitalize transition",
-                  tab === t ? "bg-line/10 text-ink" : "text-muted hover:bg-night-700/60 hover:text-ink",
-                )}
-              >
-                {t === "profile" ? "My profile" : "Appearance"}
-              </button>
+    <div className="animate-fade fixed inset-0 z-50 flex bg-night-900/70 backdrop-blur-sm" onClick={onClose}>
+      <div className="m-auto flex h-[82vh] w-full max-w-4xl animate-pop overflow-hidden rounded-2xl glass-strong shadow-glass" onClick={(e) => e.stopPropagation()}>
+        {/* Sidebar */}
+        <div className="flex w-56 shrink-0 flex-col border-r border-line/10 bg-night-900/30 p-3">
+          <div className="flex-1 overflow-y-auto">
+            {NAV.map((group) => (
+              <div key={group.section} className="mb-4">
+                <p className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-muted/80">{group.section}</p>
+                <nav className="mt-1 space-y-0.5">
+                  {group.items.map((it) => (
+                    <button
+                      key={it.id}
+                      onClick={() => setTab(it.id)}
+                      className={clsx(
+                        "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium transition",
+                        tab === it.id ? "bg-line/10 text-ink" : "text-muted hover:bg-night-700/60 hover:text-ink",
+                      )}
+                    >
+                      <Icon name={it.icon} size={17} />
+                      <span className="flex-1">{it.label}</span>
+                      {it.id === "standing" && <span className="h-2 w-2 rounded-full" style={{ background: sInfo.color }} />}
+                    </button>
+                  ))}
+                </nav>
+              </div>
             ))}
-          </nav>
-          <button onClick={onClose} className="btn-ghost mt-6 w-full text-sm">
-            Done
-          </button>
+          </div>
+
+          {/* Account footer */}
+          <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-line/10 bg-night-900/40 p-2.5">
+            <div className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-aurora to-solar-glow text-[11px] font-bold text-night-900">
+              {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.avatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initials(displayNameOf(user))
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold">{displayNameOf(user)}</p>
+              <p className="truncate text-[11px] text-muted">@{user.username}</p>
+            </div>
+            <button onClick={() => clear()} title="Log out" className="grid h-7 w-7 place-items-center rounded-lg text-muted transition hover:bg-night-700 hover:text-solar-ember">
+              <Icon name="logout" size={15} />
+            </button>
+          </div>
         </div>
 
-        <div className="min-w-0 flex-1 overflow-y-auto">
-          {tab === "profile" ? (
-            <ProfileTab user={user} accessToken={accessToken} onSaved={(u) => setAuth(accessToken!, u)} />
-          ) : (
-            <AppearanceTab />
-          )}
+        {/* Content */}
+        <div className="relative min-w-0 flex-1 overflow-y-auto">
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full bg-night-800/70 text-muted transition hover:bg-night-700 hover:text-ink"
+            title="Close"
+          >
+            <Icon name="x" size={16} />
+          </button>
+          {tab === "profile" && <ProfileTab user={user} accessToken={accessToken} onSaved={(u) => setAuth(accessToken!, u)} />}
+          {tab === "standing" && <AccountStandingPanel standing={user.standing} reason={user.standingReason} />}
+          {tab === "appearance" && <AppearanceTab />}
         </div>
       </div>
     </div>

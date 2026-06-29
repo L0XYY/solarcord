@@ -8,6 +8,7 @@ import {
   serverBadgeTypeSchema,
   createUserBadgeSchema,
   grantBadgeSchema,
+  setStandingSchema,
 } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
@@ -42,7 +43,7 @@ export async function adminRoutes(app: FastifyInstance) {
       where: q.q
         ? { OR: [{ username: { contains: q.q, mode: "insensitive" } }, { email: { contains: q.q, mode: "insensitive" } }] }
         : {},
-      select: { id: true, username: true, displayName: true, email: true, isStaff: true, isSuspended: true, createdAt: true },
+      select: { id: true, username: true, displayName: true, email: true, isStaff: true, isSuspended: true, standing: true, createdAt: true },
       orderBy: { createdAt: "desc" },
       take: q.limit,
     });
@@ -52,14 +53,30 @@ export async function adminRoutes(app: FastifyInstance) {
   app.post("/admin/users/:id/suspend", async (req) => {
     const { id } = req.params as { id: string };
     if (id === userId(req)) throw Errors.validation("You can't suspend yourself");
-    await prisma.user.update({ where: { id }, data: { isSuspended: true } });
+    await prisma.user.update({ where: { id }, data: { isSuspended: true, standing: "SUSPENDED" } });
     await prisma.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } });
     return { ok: true };
   });
 
   app.post("/admin/users/:id/unsuspend", async (req) => {
     const { id } = req.params as { id: string };
-    await prisma.user.update({ where: { id }, data: { isSuspended: false } });
+    await prisma.user.update({ where: { id }, data: { isSuspended: false, standing: "ALL_GOOD", standingReason: null } });
+    return { ok: true };
+  });
+
+  // Set a member's account standing directly (All good → Suspended).
+  app.post("/admin/users/:id/standing", async (req) => {
+    const { id } = req.params as { id: string };
+    const body = setStandingSchema.parse(req.body);
+    if (id === userId(req) && body.standing === "SUSPENDED") throw Errors.validation("You can't suspend yourself");
+    const suspended = body.standing === "SUSPENDED";
+    await prisma.user.update({
+      where: { id },
+      data: { standing: body.standing, standingReason: body.reason ?? null, isSuspended: suspended },
+    });
+    if (suspended) {
+      await prisma.refreshToken.updateMany({ where: { userId: id, revokedAt: null }, data: { revokedAt: new Date() } });
+    }
     return { ok: true };
   });
 
@@ -99,10 +116,26 @@ export async function adminRoutes(app: FastifyInstance) {
     return { server };
   });
 
+  // Soft suspend: hide from discovery and lock the server down, but keep its data
+  // so it can be restored.
   app.post("/admin/servers/:id/remove", async (req) => {
     const { id } = req.params as { id: string };
     await prisma.server.update({ where: { id }, data: { isRemoved: true, visibility: "PRIVATE" } });
     return { ok: true };
+  });
+
+  // Restore a suspended server back into the wild.
+  app.post("/admin/servers/:id/restore", async (req) => {
+    const { id } = req.params as { id: string };
+    await prisma.server.update({ where: { id }, data: { isRemoved: false } });
+    return { ok: true };
+  });
+
+  // Hard delete: permanently removes the server and everything in it (cascades).
+  app.delete("/admin/servers/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    await prisma.server.delete({ where: { id } }).catch(() => {});
+    return reply.code(204).send();
   });
 
   // ── Badge applications ──

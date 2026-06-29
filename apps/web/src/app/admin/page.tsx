@@ -9,9 +9,18 @@ import { initials, displayName } from "@/lib/ui";
 import { BadgeChip } from "@/components/BadgeChip";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Logo } from "@/components/Logo";
-import { SERVER_BADGE_INFO, type ServerBadgeType } from "@solarcord/shared";
+import { Icon, type IconName } from "@/components/Icon";
+import { SERVER_BADGE_INFO, type ServerBadgeType, ACCOUNT_STANDINGS, ACCOUNT_STANDING_INFO, type AccountStanding } from "@solarcord/shared";
 
 type Tab = "overview" | "users" | "servers" | "badges" | "reports";
+
+const TABS: { id: Tab; label: string; icon: IconName }[] = [
+  { id: "overview", label: "Overview", icon: "home" },
+  { id: "users", label: "Users", icon: "users" },
+  { id: "servers", label: "Servers", icon: "compass" },
+  { id: "badges", label: "Badges", icon: "megaphone" },
+  { id: "reports", label: "Reports", icon: "flag" },
+];
 
 export default function AdminPage() {
   const router = useRouter();
@@ -55,30 +64,32 @@ export default function AdminPage() {
 
   return (
     <main className="flex min-h-screen">
-      <aside className="w-60 shrink-0 border-r border-line/5 bg-night-900/50 p-4">
-        <div className="flex items-center gap-2 px-2">
-          <Logo size={36} />
+      <aside className="flex w-60 shrink-0 flex-col border-r border-line/10 bg-night-900/50 p-4">
+        <div className="flex items-center gap-2.5 px-1">
+          <Logo size={38} />
           <div>
             <p className="text-sm font-bold leading-tight">SolarCord</p>
             <p className="text-[11px] text-muted">Admin Console</p>
           </div>
         </div>
-        <nav className="mt-6 space-y-1">
-          {(["overview", "users", "servers", "badges", "reports"] as Tab[]).map((t) => (
+        <p className="mt-7 px-2 text-[11px] font-bold uppercase tracking-wider text-muted/80">Moderation</p>
+        <nav className="mt-2 flex-1 space-y-0.5">
+          {TABS.map((t) => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={t.id}
+              onClick={() => setTab(t.id)}
               className={clsx(
-                "w-full rounded-lg px-3 py-2 text-left text-sm font-medium capitalize transition",
-                tab === t ? "bg-solar/15 text-solar" : "text-muted hover:bg-night-700/60 hover:text-ink",
+                "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition",
+                tab === t.id ? "bg-solar/15 text-solar" : "text-muted hover:bg-night-700/60 hover:text-ink",
               )}
             >
-              {t}
+              <Icon name={t.icon} size={18} />
+              {t.label}
             </button>
           ))}
         </nav>
-        <Link href="/app" className="btn-ghost mt-6 w-full text-sm">
-          ← Back to app
+        <Link href="/app" className="btn-ghost mt-4 flex w-full items-center justify-center gap-2 text-sm">
+          <Icon name="chevronLeft" size={16} /> Back to app
         </Link>
       </aside>
 
@@ -127,6 +138,7 @@ interface AdminUser {
   email: string;
   isStaff: boolean;
   isSuspended: boolean;
+  standing: string;
 }
 
 function Users() {
@@ -138,37 +150,60 @@ function Users() {
     return () => clearTimeout(t);
   }, [q]);
 
-  async function toggle(u: AdminUser) {
-    await api(`/admin/users/${u.id}/${u.isSuspended ? "unsuspend" : "suspend"}`, { method: "POST" }).catch(() => {});
+  async function setStanding(u: AdminUser, standing: string) {
+    let reason: string | undefined;
+    if (standing !== "ALL_GOOD") reason = prompt("Optional note shown to the member on their standing page:") ?? undefined;
+    await api(`/admin/users/${u.id}/standing`, { method: "POST", json: { standing, reason } }).catch(() => {});
     await load(q);
   }
 
   return (
     <div>
       <h1 className="text-2xl font-extrabold">Users</h1>
+      <p className="mt-1 text-sm text-muted">Set a member's account standing — “Suspended” revokes their sessions and blocks login.</p>
       <input className="field mt-4 max-w-md" placeholder="Search by username or email…" value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="mt-4 space-y-1">
-        {users.map((u) => (
-          <div key={u.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-aurora to-solar-glow text-xs font-bold text-night-900">
-              {initials(displayName(u))}
+        {users.map((u) => {
+          const sInfo = ACCOUNT_STANDING_INFO[(u.standing as AccountStanding) ?? "ALL_GOOD"] ?? ACCOUNT_STANDING_INFO.ALL_GOOD;
+          return (
+            <div key={u.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-aurora to-solar-glow text-xs font-bold text-night-900">
+                {initials(displayName(u))}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  {displayName(u)} {u.isStaff && <span className="ml-1 rounded bg-solar/20 px-1.5 text-[10px] text-solar">STAFF</span>}
+                </p>
+                <p className="truncate text-xs text-muted">{u.email}</p>
+              </div>
+              <span
+                className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium sm:inline-flex"
+                style={{ background: `${sInfo.color}1f`, color: sInfo.color }}
+              >
+                <span className="h-2 w-2 rounded-full" style={{ background: sInfo.color }} />
+                {sInfo.label}
+              </span>
+              <select
+                value={u.standing ?? "ALL_GOOD"}
+                onChange={(e) => setStanding(u, e.target.value)}
+                className="field max-w-[150px] py-1.5 text-xs"
+                title="Set account standing"
+              >
+                {ACCOUNTS_STANDING_OPTS.map((s) => (
+                  <option key={s} value={s}>
+                    {ACCOUNT_STANDING_INFO[s].label}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                {displayName(u)} {u.isStaff && <span className="ml-1 rounded bg-solar/20 px-1.5 text-[10px] text-solar">STAFF</span>}
-              </p>
-              <p className="truncate text-xs text-muted">{u.email}</p>
-            </div>
-            {u.isSuspended && <span className="rounded-full bg-solar-ember/20 px-2 py-0.5 text-[11px] text-solar-ember">Suspended</span>}
-            <button onClick={() => toggle(u)} className="btn-ghost py-1.5 text-xs">
-              {u.isSuspended ? "Unsuspend" : "Suspend"}
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
+
+const ACCOUNTS_STANDING_OPTS = ACCOUNT_STANDINGS;
 
 interface AdminServer {
   id: string;
@@ -194,15 +229,25 @@ function Servers() {
     await api(`/admin/servers/${s.id}/verify`, { method: "POST", json: { [flag]: value } }).catch(() => {});
     await load(q);
   }
-  async function remove(s: AdminServer) {
-    if (!confirm(`Take down "${s.name}"? It will be hidden from discovery.`)) return;
+  async function suspend(s: AdminServer) {
+    if (!confirm(`Suspend "${s.name}"? It will be hidden from discovery and locked down. You can restore it later.`)) return;
     await api(`/admin/servers/${s.id}/remove`, { method: "POST" }).catch(() => {});
+    await load(q);
+  }
+  async function restore(s: AdminServer) {
+    await api(`/admin/servers/${s.id}/restore`, { method: "POST" }).catch(() => {});
+    await load(q);
+  }
+  async function del(s: AdminServer) {
+    if (!confirm(`Permanently DELETE "${s.name}"? This wipes the server and every channel, message and member in it. This cannot be undone.`)) return;
+    await api(`/admin/servers/${s.id}`, { method: "DELETE" }).catch(() => {});
     await load(q);
   }
 
   return (
     <div>
       <h1 className="text-2xl font-extrabold">Servers</h1>
+      <p className="mt-1 text-sm text-muted">Suspend hides a server but keeps its data. Delete wipes it permanently.</p>
       <input className="field mt-4 max-w-md" placeholder="Search servers…" value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="mt-4 space-y-1">
         {servers.map((s) => (
@@ -213,7 +258,7 @@ function Servers() {
                 {s.name}
                 {s.isVerified && <BadgeChip type="VERIFIED" />}
                 {s.isPartnered && <BadgeChip type="SOLAR_PARTNER" />}
-                {s.isRemoved && <span className="rounded bg-solar-ember/20 px-1.5 text-[10px] text-solar-ember">REMOVED</span>}
+                {s.isRemoved && <span className="rounded bg-solar-ember/20 px-1.5 text-[10px] text-solar-ember">SUSPENDED</span>}
               </p>
               <p className="truncate text-xs text-muted">
                 {s.memberCount} members · {s.category ?? "no category"} · {s.visibility.toLowerCase()}
@@ -225,11 +270,18 @@ function Servers() {
             <button onClick={() => setFlag(s, "isPartnered", !s.isPartnered)} className="btn-ghost py-1.5 text-xs">
               {s.isPartnered ? "Unpartner" : "Partner"}
             </button>
-            {!s.isRemoved && (
-              <button onClick={() => remove(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-solar-ember">
-                Remove
+            {s.isRemoved ? (
+              <button onClick={() => restore(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-emerald-400">
+                Restore
+              </button>
+            ) : (
+              <button onClick={() => suspend(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-ink">
+                Suspend
               </button>
             )}
+            <button onClick={() => del(s)} className="rounded-lg px-2 py-1.5 text-xs text-solar-ember/80 hover:bg-solar-ember/15 hover:text-solar-ember">
+              Delete
+            </button>
           </div>
         ))}
       </div>

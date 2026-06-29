@@ -101,6 +101,8 @@ export function toSelfUser(u: {
   tag: string | null;
   tagBadge: string | null;
   isStaff: boolean;
+  standing?: string;
+  standingReason?: string | null;
 }) {
   return {
     id: u.id,
@@ -118,5 +120,7 @@ export function toSelfUser(u: {
     tag: u.tag,
     tagBadge: u.tagBadge,
     isStaff: u.isStaff,
+    standing: u.standing ?? "ALL_GOOD",
+    standingReason: u.standingReason ?? null,
   };
 }

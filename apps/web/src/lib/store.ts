@@ -17,6 +17,8 @@ export interface SelfUser {
   tag: string | null;
   tagBadge: string | null;
   isStaff: boolean;
+  standing?: string;
+  standingReason?: string | null;
 }
 
 interface AuthState {

@@ -256,6 +256,11 @@ export const verifyServerSchema = z.object({
   isPartnered: z.boolean().optional(),
 });
 
+export const setStandingSchema = z.object({
+  standing: z.enum(["ALL_GOOD", "LIMITED", "VERY_LIMITED", "AT_RISK", "SUSPENDED"]),
+  reason: z.string().max(512).optional(),
+});
+
 export const adminListQuery = z.object({
   q: z.string().max(64).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),
