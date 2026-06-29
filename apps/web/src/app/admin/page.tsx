@@ -228,10 +228,20 @@ const BOOST_DURATIONS: { id: string; label: string }[] = [
   { id: "permanent", label: "Permanent" },
 ];
 
+interface BoostRow {
+  id: string;
+  source: string;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 function Servers() {
   const [servers, setServers] = useState<AdminServer[]>([]);
   const [q, setQ] = useState("");
   const [dur, setDur] = useState<Record<string, string>>({});
+  const [amt, setAmt] = useState<Record<string, number>>({});
+  const [openBoosts, setOpenBoosts] = useState<string | null>(null);
+  const [boostList, setBoostList] = useState<BoostRow[]>([]);
   const load = (query: string) => api<{ servers: AdminServer[] }>(`/admin/servers?q=${encodeURIComponent(query)}`).then((r) => setServers(r.servers));
   useEffect(() => {
     const t = setTimeout(() => load(q), 250);
@@ -242,13 +252,22 @@ function Servers() {
     await api(`/admin/servers/${s.id}/verify`, { method: "POST", json: { [flag]: value } }).catch(() => {});
     await load(q);
   }
-  async function addBoost(s: AdminServer) {
-    await api(`/admin/servers/${s.id}/boosts`, { method: "POST", json: { amount: 1, duration: dur[s.id] ?? "1m" } }).catch(() => {});
-    await load(q);
+  const loadBoosts = (id: string) => api<{ boosts: BoostRow[] }>(`/admin/servers/${id}/boosts`).then((r) => setBoostList(r.boosts));
+  async function toggleDetails(s: AdminServer) {
+    if (openBoosts === s.id) return setOpenBoosts(null);
+    setOpenBoosts(s.id);
+    setBoostList([]);
+    await loadBoosts(s.id).catch(() => {});
   }
-  async function removeBoost(s: AdminServer) {
-    await api(`/admin/servers/${s.id}/boosts/remove`, { method: "POST", json: { amount: 1 } }).catch(() => {});
+  async function addBoost(s: AdminServer) {
+    await api(`/admin/servers/${s.id}/boosts`, { method: "POST", json: { amount: amt[s.id] ?? 1, duration: dur[s.id] ?? "1m" } }).catch(() => {});
     await load(q);
+    if (openBoosts === s.id) await loadBoosts(s.id).catch(() => {});
+  }
+  async function removeBoost(s: AdminServer, boostId?: string) {
+    await api(`/admin/servers/${s.id}/boosts/remove`, { method: "POST", json: boostId ? { boostId } : { amount: 1 } }).catch(() => {});
+    await load(q);
+    if (openBoosts === s.id) await loadBoosts(s.id).catch(() => {});
   }
   async function suspend(s: AdminServer) {
     if (!confirm(`Suspend "${s.name}"? It will be hidden from discovery and locked down. You can restore it later.`)) return;
@@ -308,10 +327,20 @@ function Servers() {
 
             {/* Boosts */}
             <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line/5 pt-2 text-xs">
-              <span className="flex items-center gap-1.5 font-medium text-pink-400">
+              <button onClick={() => toggleDetails(s)} className="flex items-center gap-1.5 font-medium text-pink-400 hover:underline">
                 <span className="inline-block h-2 w-2 rotate-45 rounded-[1px] bg-pink-400" /> {s.boostCount} boost{s.boostCount === 1 ? "" : "s"} · Level {s.boostLevel}
-              </span>
+                <Icon name="chevronLeft" size={12} className={clsx("transition", openBoosts === s.id ? "-rotate-90" : "rotate-90")} />
+              </button>
               <span className="ml-auto flex items-center gap-2">
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  value={amt[s.id] ?? 1}
+                  onChange={(e) => setAmt((a) => ({ ...a, [s.id]: Math.max(1, Math.min(100, Number(e.target.value) || 1)) }))}
+                  className="field w-14 py-1 text-center text-xs"
+                  title="How many"
+                />
                 <span className="text-muted">for</span>
                 <select
                   value={dur[s.id] ?? "1m"}
@@ -325,7 +354,7 @@ function Servers() {
                   ))}
                 </select>
                 <button onClick={() => addBoost(s)} className="btn-solar py-1 text-xs">
-                  + Add boost
+                  + Add
                 </button>
                 <button
                   onClick={() => removeBoost(s)}
@@ -336,6 +365,28 @@ function Servers() {
                 </button>
               </span>
             </div>
+
+            {/* Boost details */}
+            {openBoosts === s.id && (
+              <div className="mt-2 space-y-1 rounded-lg bg-night-900/40 p-2">
+                {boostList.length === 0 ? (
+                  <p className="px-1 py-1 text-xs text-muted">No active boosts.</p>
+                ) : (
+                  boostList.map((b) => (
+                    <div key={b.id} className="flex items-center gap-2 rounded px-2 py-1 text-xs hover:bg-night-700/40">
+                      <span className="inline-block h-1.5 w-1.5 rotate-45 rounded-[1px] bg-pink-400" />
+                      <span className="font-medium">{b.source}</span>
+                      <span className="text-muted">
+                        {b.expiresAt ? `expires ${new Date(b.expiresAt).toLocaleDateString()}` : "permanent"}
+                      </span>
+                      <button onClick={() => removeBoost(s, b.id)} title="Remove this boost" className="ml-auto grid h-5 w-5 place-items-center rounded text-muted hover:bg-night-700 hover:text-solar-ember">
+                        <Icon name="x" size={12} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>

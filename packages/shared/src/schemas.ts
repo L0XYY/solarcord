@@ -281,7 +281,10 @@ export const adminBoostSchema = z.object({
   amount: z.coerce.number().int().min(1).max(100).default(1),
   duration: boostDurationSchema.default("1m"),
 });
-export const removeBoostSchema = z.object({ amount: z.coerce.number().int().min(1).max(100).default(1) });
+export const removeBoostSchema = z.object({
+  amount: z.coerce.number().int().min(1).max(100).default(1),
+  boostId: z.string().optional(), // remove one specific boost instead of N
+});
 
 export const adminListQuery = z.object({
   q: z.string().max(64).optional(),

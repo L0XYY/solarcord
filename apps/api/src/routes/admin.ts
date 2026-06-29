@@ -123,17 +123,44 @@ export async function adminRoutes(app: FastifyInstance) {
     return { server: r };
   });
 
-  // Remove boosts from a server (soonest-expiring first).
-  app.post("/admin/servers/:id/boosts/remove", async (req) => {
+  // List a server's active boosts (source + expiry), for the admin detail view.
+  app.get("/admin/servers/:id/boosts", async (req) => {
     const { id } = req.params as { id: string };
-    const { amount } = removeBoostSchema.parse(req.body);
-    const victims = await prisma.serverBoost.findMany({
+    await recomputeServerBoosts(id); // drop expired first
+    const boosts = await prisma.serverBoost.findMany({
       where: { serverId: id },
       orderBy: [{ expiresAt: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
-      take: amount,
-      select: { id: true },
+      take: 200,
     });
-    await prisma.serverBoost.deleteMany({ where: { id: { in: victims.map((v) => v.id) } } });
+    // Resolve user-sourced boosts to a username.
+    const userIds = [...new Set(boosts.map((b) => b.source).filter((s) => s !== "admin" && s !== "solar_plus"))];
+    const users = userIds.length
+      ? await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, username: true } })
+      : [];
+    const nameById = new Map(users.map((u) => [u.id, u.username]));
+    return {
+      boosts: boosts.map((b) => ({
+        id: b.id,
+        source: b.source === "admin" ? "Admin" : b.source === "solar_plus" ? "Solar+" : `@${nameById.get(b.source) ?? "member"}`,
+        expiresAt: b.expiresAt ? b.expiresAt.toISOString() : null,
+        createdAt: b.createdAt.toISOString(),
+      })),
+    };
+  });
+
+  // Remove boosts from a server — a specific one, or N soonest-expiring.
+  app.post("/admin/servers/:id/boosts/remove", async (req) => {
+    const { id } = req.params as { id: string };
+    const { amount, boostId } = removeBoostSchema.parse(req.body);
+    const victims = boostId
+      ? [{ id: boostId }]
+      : await prisma.serverBoost.findMany({
+          where: { serverId: id },
+          orderBy: [{ expiresAt: { sort: "asc", nulls: "last" } }, { createdAt: "desc" }],
+          take: amount,
+          select: { id: true },
+        });
+    await prisma.serverBoost.deleteMany({ where: { serverId: id, id: { in: victims.map((v) => v.id) } } });
     const r = await recomputeServerBoosts(id);
     await prisma.auditLog.create({ data: { serverId: id, actorId: userId(req), action: "server.boost.remove", metadata: { amount: victims.length, boostCount: r.boostCount, boostLevel: r.boostLevel } } });
     app.io.to(room.server(id)).emit("server:boost", { serverId: id, boostCount: r.boostCount, boostLevel: r.boostLevel });
