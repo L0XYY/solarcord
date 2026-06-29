@@ -215,9 +215,23 @@ model Server {
   warnings     Warning[]
   modNotes     ModNote[]
   auditLogs    AuditLog[]
+  serverBoosts ServerBoost[]
 
   @@index([visibility])
   @@index([category])
+}
+
+// An individual server boost. Counts toward the server's level while active;
+// expiresAt = null means it never expires.
+model ServerBoost {
+  id        String    @id @default(cuid())
+  serverId  String
+  server    Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  source    String    @default("admin") // "admin" | "solar_plus" | <userId>
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([serverId])
 }
 
 model ServerMember {

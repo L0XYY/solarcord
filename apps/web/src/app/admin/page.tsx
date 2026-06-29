@@ -215,12 +215,23 @@ interface AdminServer {
   isVerified: boolean;
   isPartnered: boolean;
   isRemoved: boolean;
+  boostCount: number;
+  boostLevel: number;
   category: string | null;
 }
+
+const BOOST_DURATIONS: { id: string; label: string }[] = [
+  { id: "1w", label: "1 week" },
+  { id: "1m", label: "1 month" },
+  { id: "3m", label: "3 months" },
+  { id: "12m", label: "12 months" },
+  { id: "permanent", label: "Permanent" },
+];
 
 function Servers() {
   const [servers, setServers] = useState<AdminServer[]>([]);
   const [q, setQ] = useState("");
+  const [dur, setDur] = useState<Record<string, string>>({});
   const load = (query: string) => api<{ servers: AdminServer[] }>(`/admin/servers?q=${encodeURIComponent(query)}`).then((r) => setServers(r.servers));
   useEffect(() => {
     const t = setTimeout(() => load(q), 250);
@@ -229,6 +240,14 @@ function Servers() {
 
   async function setFlag(s: AdminServer, flag: "isVerified" | "isPartnered", value: boolean) {
     await api(`/admin/servers/${s.id}/verify`, { method: "POST", json: { [flag]: value } }).catch(() => {});
+    await load(q);
+  }
+  async function addBoost(s: AdminServer) {
+    await api(`/admin/servers/${s.id}/boosts`, { method: "POST", json: { amount: 1, duration: dur[s.id] ?? "1m" } }).catch(() => {});
+    await load(q);
+  }
+  async function removeBoost(s: AdminServer) {
+    await api(`/admin/servers/${s.id}/boosts/remove`, { method: "POST", json: { amount: 1 } }).catch(() => {});
     await load(q);
   }
   async function suspend(s: AdminServer) {
@@ -253,37 +272,70 @@ function Servers() {
       <input className="field mt-4 max-w-md" placeholder="Search servers…" value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="mt-4 space-y-1">
         {servers.map((s) => (
-          <div key={s.id} className="flex items-center gap-3 rounded-xl glass px-3 py-2.5">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-night-700 text-xs font-bold">{initials(s.name)}</div>
-            <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
-                {s.name}
-                {s.isVerified && <BadgeChip type="VERIFIED" />}
-                {s.isPartnered && <BadgeChip type="SOLAR_PARTNER" />}
-                {s.isRemoved && <span className="rounded bg-solar-ember/20 px-1.5 text-[10px] text-solar-ember">SUSPENDED</span>}
-              </p>
-              <p className="truncate text-xs text-muted">
-                {s.memberCount} members · {s.category ?? "no category"} · {s.visibility.toLowerCase()}
-              </p>
+          <div key={s.id} className="rounded-xl glass px-3 py-2.5">
+            <div className="flex items-center gap-3">
+              <div className="grid h-9 w-9 place-items-center rounded-full bg-night-700 text-xs font-bold">{initials(s.name)}</div>
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-1.5 truncate text-sm font-semibold">
+                  {s.name}
+                  {s.isVerified && <BadgeChip type="VERIFIED" />}
+                  {s.isPartnered && <BadgeChip type="SOLAR_PARTNER" />}
+                  {s.isRemoved && <span className="rounded bg-solar-ember/20 px-1.5 text-[10px] text-solar-ember">SUSPENDED</span>}
+                </p>
+                <p className="truncate text-xs text-muted">
+                  {s.memberCount} members · {s.category ?? "no category"} · {s.visibility.toLowerCase()}
+                </p>
+              </div>
+              <button onClick={() => setFlag(s, "isVerified", !s.isVerified)} className="btn-ghost py-1.5 text-xs">
+                {s.isVerified ? "Unverify" : "Verify"}
+              </button>
+              <button onClick={() => setFlag(s, "isPartnered", !s.isPartnered)} className="btn-ghost py-1.5 text-xs">
+                {s.isPartnered ? "Unpartner" : "Partner"}
+              </button>
+              {s.isRemoved ? (
+                <button onClick={() => restore(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-emerald-400">
+                  Restore
+                </button>
+              ) : (
+                <button onClick={() => suspend(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-ink">
+                  Suspend
+                </button>
+              )}
+              <button onClick={() => del(s)} className="rounded-lg px-2 py-1.5 text-xs text-solar-ember/80 hover:bg-solar-ember/15 hover:text-solar-ember">
+                Delete
+              </button>
             </div>
-            <button onClick={() => setFlag(s, "isVerified", !s.isVerified)} className="btn-ghost py-1.5 text-xs">
-              {s.isVerified ? "Unverify" : "Verify"}
-            </button>
-            <button onClick={() => setFlag(s, "isPartnered", !s.isPartnered)} className="btn-ghost py-1.5 text-xs">
-              {s.isPartnered ? "Unpartner" : "Partner"}
-            </button>
-            {s.isRemoved ? (
-              <button onClick={() => restore(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-emerald-400">
-                Restore
-              </button>
-            ) : (
-              <button onClick={() => suspend(s)} className="rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-night-700 hover:text-ink">
-                Suspend
-              </button>
-            )}
-            <button onClick={() => del(s)} className="rounded-lg px-2 py-1.5 text-xs text-solar-ember/80 hover:bg-solar-ember/15 hover:text-solar-ember">
-              Delete
-            </button>
+
+            {/* Boosts */}
+            <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-line/5 pt-2 text-xs">
+              <span className="flex items-center gap-1.5 font-medium text-pink-400">
+                <span className="inline-block h-2 w-2 rotate-45 rounded-[1px] bg-pink-400" /> {s.boostCount} boost{s.boostCount === 1 ? "" : "s"} · Level {s.boostLevel}
+              </span>
+              <span className="ml-auto flex items-center gap-2">
+                <span className="text-muted">for</span>
+                <select
+                  value={dur[s.id] ?? "1m"}
+                  onChange={(e) => setDur((d) => ({ ...d, [s.id]: e.target.value }))}
+                  className="field max-w-[120px] py-1 text-xs"
+                >
+                  {BOOST_DURATIONS.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+                <button onClick={() => addBoost(s)} className="btn-solar py-1 text-xs">
+                  + Add boost
+                </button>
+                <button
+                  onClick={() => removeBoost(s)}
+                  disabled={s.boostCount === 0}
+                  className="rounded-lg px-2 py-1 text-xs text-muted hover:bg-night-700 hover:text-solar-ember disabled:opacity-40"
+                >
+                  − Remove
+                </button>
+              </span>
+            </div>
           </div>
         ))}
       </div>

@@ -276,6 +276,13 @@ export const setStandingSchema = z.object({
   reason: z.string().max(512).optional(),
 });
 
+export const boostDurationSchema = z.enum(["1w", "1m", "3m", "12m", "permanent"]);
+export const adminBoostSchema = z.object({
+  amount: z.coerce.number().int().min(1).max(100).default(1),
+  duration: boostDurationSchema.default("1m"),
+});
+export const removeBoostSchema = z.object({ amount: z.coerce.number().int().min(1).max(100).default(1) });
+
 export const adminListQuery = z.object({
   q: z.string().max(64).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(50),

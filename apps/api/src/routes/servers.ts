@@ -14,6 +14,7 @@ import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { resolveMember, requirePermission } from "../permissions.js";
 import { postSystemMessage } from "../system.js";
+import { recomputeServerBoosts } from "../boosts.js";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const SOLAR_PLUS_WEEKLY_BOOSTS = 2;
@@ -195,13 +196,10 @@ export async function serverRoutes(app: FastifyInstance) {
       await prisma.user.update({ where: { id: uid }, data: { boostsUsed: a.used + 1, boostWindowStart: a.windowStart } });
     }
 
-    const current = await prisma.server.findUnique({ where: { id }, select: { boostCount: true, systemChannelId: true, announceBoosts: true } });
-    const boostCount = (current?.boostCount ?? 0) + 1;
-    const server = await prisma.server.update({
-      where: { id },
-      data: { boostCount, boostLevel: boostLevelFor(boostCount) },
-      select: { boostCount: true, boostLevel: true },
-    });
+    const cfg = await prisma.server.findUnique({ where: { id }, select: { systemChannelId: true, announceBoosts: true } });
+    await prisma.serverBoost.create({ data: { serverId: id, source: uid, expiresAt: null } });
+    const server = await recomputeServerBoosts(id);
+    const current = cfg;
     await prisma.auditLog.create({ data: { serverId: id, actorId: uid, action: "server.boost", metadata: { boostCount: server.boostCount, boostLevel: server.boostLevel } } });
     app.io.to(room.server(id)).emit("server:boost", { serverId: id, boostCount: server.boostCount, boostLevel: server.boostLevel });
 
