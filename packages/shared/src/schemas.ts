@@ -168,6 +168,7 @@ export const updateRoleSchema = z.object({
 });
 
 export const moveRoleSchema = z.object({ direction: z.enum(["up", "down"]) });
+export const reorderRolesSchema = z.object({ orderedIds: z.array(z.string()).max(250) });
 
 // ── Custom user badges (admin) ──
 export const createUserBadgeSchema = z.object({

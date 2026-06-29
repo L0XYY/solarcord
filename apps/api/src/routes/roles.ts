@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { prisma } from "@solarcord/db";
-import { createRoleSchema, updateRoleSchema, moveRoleSchema, Permission, toBits, room } from "@solarcord/shared";
+import { createRoleSchema, updateRoleSchema, moveRoleSchema, reorderRolesSchema, Permission, toBits, room } from "@solarcord/shared";
 import { Errors } from "../errors.js";
 import { requireAuth, userId } from "../auth.js";
 import { requirePermission, resolveMember, type MemberContext } from "../permissions.js";
@@ -91,6 +91,27 @@ export async function roleRoutes(app: FastifyInstance) {
     await prisma.auditLog.create({ data: { serverId: role.serverId, actorId: userId(req), action: "role.update", targetId: id } });
     await broadcastRoles(app, role.serverId);
     return { role: updated };
+  });
+
+  // Reorder all roles at once (drag & drop). orderedIds is top → bottom (highest
+  // first); @everyone is always pinned to the bottom and ignored here.
+  app.post("/servers/:id/roles/reorder", async (req) => {
+    const { id } = req.params as { id: string };
+    const { orderedIds } = reorderRolesSchema.parse(req.body);
+    const ctx = await requirePermission(id, userId(req), Permission.MANAGE_ROLES);
+
+    const roles = await prisma.role.findMany({ where: { serverId: id, isEveryone: false }, select: { id: true, position: true } });
+    const known = new Set(roles.map((r) => r.id));
+    const ids = orderedIds.filter((rid) => known.has(rid));
+    if (ids.length !== roles.length) throw Errors.validation("Reorder must include every role exactly once");
+    // You can't move roles at or above your own highest role.
+    for (const r of roles) assertAboveRole(ctx, r.position);
+
+    const n = ids.length;
+    await prisma.$transaction(ids.map((rid, i) => prisma.role.update({ where: { id: rid }, data: { position: n - i } })));
+    await prisma.auditLog.create({ data: { serverId: id, actorId: userId(req), action: "role.reorder" } });
+    await broadcastRoles(app, id);
+    return { ok: true };
   });
 
   // Reorder a role one step up (higher in the hierarchy) or down.

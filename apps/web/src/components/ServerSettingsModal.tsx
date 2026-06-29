@@ -127,6 +127,8 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
   const [hoisted, setHoisted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
 
   const selected = roles.find((r) => r.id === selectedId) ?? null;
 
@@ -175,6 +177,22 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
     await onReload();
   }
 
+  // Drag & drop: drop `dragId` onto `targetId`, rebuild the order, persist.
+  async function dropOn(targetId: string) {
+    const src = dragId;
+    setDragId(null);
+    setOverId(null);
+    if (!src || src === targetId) return;
+    const ordered = roles.filter((r) => !r.isEveryone).map((r) => r.id);
+    const from = ordered.indexOf(src);
+    const to = ordered.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    ordered.splice(from, 1);
+    ordered.splice(to, 0, src);
+    await api(`/servers/${serverId}/roles/reorder`, { method: "POST", json: { orderedIds: ordered } }).catch(() => {});
+    await onReload();
+  }
+
   async function save() {
     if (!selected) return;
     setSaving(true);
@@ -216,18 +234,41 @@ function RolesTab({ serverId, roles, onReload }: { serverId: string; roles: Role
             // roles arrive sorted by position desc (top = highest).
             const canUp = i > 0 && !r.isEveryone;
             const canDown = !r.isEveryone && !!roles[i + 1] && !roles[i + 1]!.isEveryone;
+            const draggable = !r.isEveryone;
             return (
               <div
                 key={r.id}
+                draggable={draggable}
+                onDragStart={draggable ? () => setDragId(r.id) : undefined}
+                onDragEnd={() => {
+                  setDragId(null);
+                  setOverId(null);
+                }}
+                onDragOver={
+                  draggable
+                    ? (e) => {
+                        e.preventDefault();
+                        if (overId !== r.id) setOverId(r.id);
+                      }
+                    : undefined
+                }
+                onDrop={draggable ? () => dropOn(r.id) : undefined}
                 className={clsx(
                   "group mb-0.5 flex items-center gap-1 rounded-lg pr-1 transition",
                   r.id === selectedId ? "bg-night-700/70" : "hover:bg-night-700/40",
+                  dragId === r.id && "opacity-40",
+                  overId === r.id && dragId && dragId !== r.id && "ring-2 ring-solar/60",
                 )}
               >
+                {draggable && (
+                  <span className="grid w-3 shrink-0 cursor-grab place-items-center text-muted opacity-0 transition group-hover:opacity-60" title="Drag to reorder">
+                    ⠿
+                  </span>
+                )}
                 <button
                   onClick={() => setSelectedId(r.id)}
                   className={clsx(
-                    "flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm transition",
+                    "flex min-w-0 flex-1 items-center gap-2 py-1.5 pl-1 pr-2 text-left text-sm transition",
                     r.id === selectedId ? "text-ink" : "text-muted group-hover:text-ink",
                   )}
                 >
