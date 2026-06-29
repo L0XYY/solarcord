@@ -70,6 +70,31 @@
   --aurora: 246 138 196;
 }
 
+/* Accent base shades — tint the dark surfaces with the theme hue so even opaque
+   panels (sidebars, member list, hovers) shift colour. Scoped to the dark base
+   so the light theme stays light. */
+:root[data-theme="dark"][data-accent="solar"]   { --night-900: 27 22 18; --night-800: 36 32 29; --night-700: 45 41 39; --night-600: 58 53 49; }
+:root[data-theme="dark"][data-accent="blurple"]  { --night-900: 19 19 28; --night-800: 28 29 40; --night-700: 38 39 51; --night-600: 51 52 64; }
+:root[data-theme="dark"][data-accent="crimson"]  { --night-900: 26 17 20; --night-800: 36 26 31; --night-700: 46 36 41; --night-600: 60 47 51; }
+:root[data-theme="dark"][data-accent="mint"]     { --night-900: 16 24 23; --night-800: 25 35 34; --night-700: 34 44 45; --night-600: 47 57 56; }
+:root[data-theme="dark"][data-accent="violet"]   { --night-900: 22 19 29; --night-800: 31 29 41; --night-700: 41 38 51; --night-600: 54 49 64; }
+:root[data-theme="dark"][data-accent="aqua"]     { --night-900: 16 24 27; --night-800: 25 34 39; --night-700: 35 43 49; --night-600: 47 56 62; }
+:root[data-theme="dark"][data-accent="rose"]     { --night-900: 26 20 25; --night-800: 36 29 36; --night-700: 46 38 47; --night-600: 60 49 59; }
+
+/* Accent-tinted glass panels + borders. */
+:root[data-accent] .glass {
+  background:
+    linear-gradient(0deg, rgb(var(--solar) / 0.05), rgb(var(--solar) / 0.05)),
+    rgb(var(--night-800) / 0.55);
+  border-color: rgb(var(--solar) / 0.15);
+}
+:root[data-accent] .glass-strong {
+  background:
+    linear-gradient(0deg, rgb(var(--solar) / 0.06), rgb(var(--solar) / 0.06)),
+    rgb(var(--night-800) / 0.8);
+  border-color: rgb(var(--solar) / 0.18);
+}
+
 /* When any accent theme is active, wash the whole app in a matching gradient.
    The default (no data-accent) keeps the clean monochrome look. */
 :root[data-accent] body {
