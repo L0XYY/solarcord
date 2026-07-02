@@ -1,7 +1,8 @@
 "use client";
 
 // SolarCord logo — a friendly planet (smiley + Saturn ring) over a chat bubble.
-// `square` wraps it in the glassy black app-icon tile; otherwise it's the bare mark.
+// `square` wraps it in a macOS-style squircle app-icon tile with an aurora
+// gradient; otherwise it's the bare white mark (works on any background).
 export function Logo({ size = 40, square = true, className }: { size?: number; square?: boolean; className?: string }) {
   const mark = (
     <g>
@@ -32,12 +33,20 @@ export function Logo({ size = 40, square = true, className }: { size?: number; s
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" className={className} role="img" aria-label="SolarCord">
       <defs>
+        {/* Black-glass tile: subtle dark vertical gradient. */}
         <linearGradient id="scLogoTile" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#1b1b20" />
-          <stop offset="1" stopColor="#060608" />
+          <stop offset="0" stopColor="#1b1b1b" />
+          <stop offset="1" stopColor="#090909" />
+        </linearGradient>
+        {/* macOS-style top gloss. */}
+        <linearGradient id="scLogoGloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#fff" stopOpacity="0.28" />
+          <stop offset="0.55" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="url(#scLogoTile)" stroke="#fff" strokeOpacity="0.18" />
+      <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="url(#scLogoTile)" />
+      <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="url(#scLogoGloss)" />
+      <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="none" stroke="#fff" strokeOpacity="0.14" />
       {mark}
     </svg>
   );

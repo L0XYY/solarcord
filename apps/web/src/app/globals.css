@@ -2,47 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SolarCord — monochrome "glass" theme, macOS-inspired vibrancy. */
+/* SolarCord — "Black Glass" monochrome theme (Vyntra-inspired): near-black base,
+   faint white grid + soft top glow, frosted macOS-style glass, silvery display
+   headings (Space Grotesk), white primary accent. Clean, modern, colour-free. */
 :root,
 :root[data-theme="dark"] {
-  --night-900: 12 12 14; /* page */
-  --night-800: 22 22 26; /* panel base */
-  --night-700: 32 32 37;
-  --night-600: 46 46 52;
-  --solar: 244 244 247; /* accent — near white */
-  --solar-glow: 208 208 214;
-  --solar-ember: 255 69 58; /* destructive (kept functional) */
-  --aurora: 174 174 184; /* neutral mid */
-  --ink: 245 245 248;
-  --muted: 150 150 158;
-  --line: 255 255 255;
+  --night-900: 8 8 8; /* #080808 page */
+  --night-800: 15 15 15; /* #0F0F0F card / panel */
+  --night-700: 28 28 28; /* #1C1C1C secondary surface */
+  --night-600: 41 41 41; /* #292929 input / raised */
+  --solar: 250 250 250; /* #FAFAFA — primary accent (white) */
+  --solar-glow: 219 219 219; /* #DBDBDB — silver (hover / gradient) */
+  --solar-ember: 220 40 40; /* destructive red (kept functional) */
+  --aurora: 148 148 148; /* #949494 — neutral mid (muted foreground) */
+  --ink: 245 245 245; /* #F5F5F5 foreground */
+  --muted: 148 148 148; /* #949494 */
+  --line: 255 255 255; /* white hairlines (used at low alpha) */
+  color-scheme: dark;
 }
 
 :root[data-theme="light"] {
-  --night-900: 242 242 245;
-  --night-800: 255 255 255;
-  --night-700: 235 235 240;
-  --night-600: 223 223 229;
-  --solar: 26 26 30; /* accent — near black */
-  --solar-glow: 70 70 78;
-  --solar-ember: 215 48 44;
-  --aurora: 120 120 130;
-  --ink: 24 24 28;
-  --muted: 112 112 122;
-  --line: 0 0 0;
+  --night-900: 250 250 250; /* #FAFAFA page */
+  --night-800: 255 255 255; /* panels */
+  --night-700: 241 241 241;
+  --night-600: 228 228 228;
+  --solar: 10 10 10; /* near-black primary */
+  --solar-glow: 40 40 40;
+  --solar-ember: 200 40 40;
+  --aurora: 110 110 110;
+  --ink: 18 18 18;
+  --muted: 100 100 100;
+  --line: 10 10 12;
+  color-scheme: light;
 }
 
-/* Solar+ accent themes — recolour the accent (buttons, active states, rings,
-   the solar-text gradient). Layered on top of the dark/light base. */
+/* Solar+ accent themes — optional recolour of the accent (buttons, active states,
+   rings, headings) and a matching wash. Layered on top of the monochrome base. */
 :root[data-accent="solar"] {
-  --solar: 255 184 77;
-  --solar-glow: 255 154 46;
-  --aurora: 255 184 77;
+  --solar: 255 176 64;
+  --solar-glow: 255 150 46;
+  --aurora: 255 176 64;
 }
-:root[data-accent="blurple"] {
-  --solar: 124 136 248;
-  --solar-glow: 88 101 242;
-  --aurora: 124 136 248;
+:root[data-accent="indigo"] {
+  --solar: 124 108 246;
+  --solar-glow: 96 84 236;
+  --aurora: 124 108 246;
 }
 :root[data-accent="crimson"] {
   --solar: 240 96 106;
@@ -71,10 +75,9 @@
 }
 
 /* Accent base shades — tint the dark surfaces with the theme hue so even opaque
-   panels (sidebars, member list, hovers) shift colour. Scoped to the dark base
-   so the light theme stays light. */
+   panels shift colour. Scoped to the dark base so light stays light. */
 :root[data-theme="dark"][data-accent="solar"]   { --night-900: 27 22 18; --night-800: 36 32 29; --night-700: 45 41 39; --night-600: 58 53 49; }
-:root[data-theme="dark"][data-accent="blurple"]  { --night-900: 19 19 28; --night-800: 28 29 40; --night-700: 38 39 51; --night-600: 51 52 64; }
+:root[data-theme="dark"][data-accent="indigo"]   { --night-900: 17 18 30; --night-800: 26 28 42; --night-700: 36 38 53; --night-600: 49 51 67; }
 :root[data-theme="dark"][data-accent="crimson"]  { --night-900: 26 17 20; --night-800: 36 26 31; --night-700: 46 36 41; --night-600: 60 47 51; }
 :root[data-theme="dark"][data-accent="mint"]     { --night-900: 16 24 23; --night-800: 25 35 34; --night-700: 34 44 45; --night-600: 47 57 56; }
 :root[data-theme="dark"][data-accent="violet"]   { --night-900: 22 19 29; --night-800: 31 29 41; --night-700: 41 38 51; --night-600: 54 49 64; }
@@ -85,32 +88,28 @@
 :root[data-accent] .glass {
   background:
     linear-gradient(0deg, rgb(var(--solar) / 0.05), rgb(var(--solar) / 0.05)),
-    rgb(var(--night-800) / 0.55);
-  border-color: rgb(var(--solar) / 0.15);
+    rgb(var(--night-800) / 0.5);
+  border-color: rgb(var(--solar) / 0.14);
 }
 :root[data-accent] .glass-strong {
   background:
     linear-gradient(0deg, rgb(var(--solar) / 0.06), rgb(var(--solar) / 0.06)),
-    rgb(var(--night-800) / 0.8);
-  border-color: rgb(var(--solar) / 0.18);
+    rgb(var(--night-800) / 0.72);
+  border-color: rgb(var(--solar) / 0.16);
 }
 
-/* When any accent theme is active, wash the whole app in a matching gradient.
-   The default (no data-accent) keeps the clean monochrome look. */
+/* Under an accent, wash the app in a matching hue instead of the monochrome glow. */
 :root[data-accent] body {
   background:
     radial-gradient(1100px 700px at 85% -12%, rgb(var(--solar) / 0.18), transparent 60%),
-    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.14), transparent 55%),
-    radial-gradient(900px 700px at 50% 118%, rgb(var(--aurora) / 0.12), transparent 60%),
+    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.13), transparent 55%),
     rgb(var(--night-900));
   background-attachment: fixed;
 }
-/* Light base keeps the gradient subtler so text stays readable. */
 :root[data-theme="light"][data-accent] body {
   background:
-    radial-gradient(1100px 700px at 85% -12%, rgb(var(--solar) / 0.12), transparent 60%),
-    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.1), transparent 55%),
-    radial-gradient(900px 700px at 50% 118%, rgb(var(--aurora) / 0.08), transparent 60%),
+    radial-gradient(1100px 700px at 85% -12%, rgb(var(--solar) / 0.1), transparent 60%),
+    radial-gradient(950px 650px at 2% 6%, rgb(var(--solar-glow) / 0.08), transparent 55%),
     rgb(var(--night-900));
   background-attachment: fixed;
 }
@@ -130,56 +129,90 @@ body {
   height: 100%;
   margin: 0;
 }
+/* Default = the "black glass" look: soft white glow from the top, a faint white
+   grid, on the near-black base. */
 body {
   background:
-    radial-gradient(900px 500px at 50% -15%, rgb(var(--line) / 0.05), transparent 60%),
+    radial-gradient(62% 52% at 50% 0%, rgb(255 255 255 / 0.06) 0%, transparent 70%),
+    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
     rgb(var(--night-900));
+  background-size: auto, 44px 44px, 44px 44px, auto;
+  background-attachment: fixed;
   color: rgb(var(--ink));
-  font-family:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter",
-    ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
+  accent-color: rgb(var(--solar));
+}
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(62% 52% at 50% 0%, rgb(0 0 0 / 0.025) 0%, transparent 70%),
+    linear-gradient(90deg, rgb(0 0 0 / 0.035) 1px, transparent 1px),
+    linear-gradient(rgb(0 0 0 / 0.035) 1px, transparent 1px),
+    rgb(var(--night-900));
+  background-size: auto, 44px 44px, 44px 44px, auto;
+  background-attachment: fixed;
+}
+/* Display font for headings (Space Grotesk), tighter tracking. */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.02em;
+}
+code, kbd, pre, samp {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
 @layer components {
-  /* Frosted vibrancy panel */
+  /* Frosted vibrancy panel — Vyntra-style: faint tint, heavy blur + saturation,
+     hairline white border, and a soft inner glow. */
   .glass {
-    border: 1px solid rgb(var(--line) / 0.1);
-    background: rgb(var(--night-800) / 0.55);
-    backdrop-filter: blur(22px) saturate(1.5);
-    -webkit-backdrop-filter: blur(22px) saturate(1.5);
+    border: 1px solid rgb(var(--line) / 0.08);
+    background: rgb(var(--night-800) / 0.5);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: inset 0 0 40px rgb(255 255 255 / 0.02), inset 0 1px 0 rgb(255 255 255 / 0.04);
   }
   .glass-strong {
-    border: 1px solid rgb(var(--line) / 0.12);
-    background: rgb(var(--night-800) / 0.8);
-    backdrop-filter: blur(30px) saturate(1.6);
-    -webkit-backdrop-filter: blur(30px) saturate(1.6);
+    border: 1px solid rgb(var(--line) / 0.1);
+    background: rgb(var(--night-800) / 0.72);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 24px 60px -24px rgb(0 0 0 / 0.75);
   }
+  /* Default headline gradient = silvery metallic (white → grey). */
   .solar-text {
-    background: linear-gradient(120deg, rgb(var(--ink)), rgb(var(--muted)));
+    background: linear-gradient(135deg, #ffffff 0%, #dbdbdb 45%, #9e9e9e 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
+  /* Silver chip fill for icon tiles / accents. */
+  .brand-chip {
+    background: linear-gradient(135deg, #fafafa, #a3a3a3);
+  }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:opacity-50;
   }
-  /* Primary = solid near-white (dark) / near-black (light) — clean macOS button */
+  /* Primary = solid white (dark on light) — clean monochrome button. */
   .btn-solar {
     @apply btn;
     color: rgb(var(--night-900));
     background: rgb(var(--solar));
-    box-shadow: 0 1px 0 rgb(var(--line) / 0.2) inset, 0 6px 18px -8px rgb(0 0 0 / 0.5);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 8px 24px -12px rgb(255 255 255 / 0.3);
   }
   .btn-solar:hover {
     background: rgb(var(--solar-glow));
+  }
+  .btn-solar:active {
+    filter: brightness(0.97);
   }
   .btn-ghost {
     @apply btn;
     border: 1px solid rgb(var(--line) / 0.12);
     background: rgb(var(--night-700) / 0.6);
     color: rgb(var(--ink));
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
   }
   .btn-ghost:hover {
     background: rgb(var(--night-600) / 0.7);
@@ -199,9 +232,41 @@ body {
     color: rgb(var(--muted));
   }
   .field:focus {
-    border-color: rgb(var(--line) / 0.25);
-    box-shadow: 0 0 0 2px rgb(var(--line) / 0.1);
+    border-color: rgb(var(--solar) / 0.45);
+    box-shadow: 0 0 0 3px rgb(var(--solar) / 0.14);
   }
+}
+
+/* macOS light-mode depth — the inset highlight only reads on dark surfaces, so in
+   light mode panels get soft elevation shadows and controls go solid white. */
+:root[data-theme="light"] .glass {
+  box-shadow: 0 1px 2px rgb(15 18 40 / 0.04), 0 10px 26px -16px rgb(15 18 40 / 0.16);
+}
+:root[data-theme="light"] .glass-strong {
+  box-shadow: 0 2px 6px rgb(15 18 40 / 0.06), 0 26px 60px -24px rgb(15 18 40 / 0.28);
+}
+:root[data-theme="light"] .field {
+  background: #fff;
+}
+:root[data-theme="light"] .btn-ghost {
+  background: #fff;
+  border-color: rgb(var(--line) / 0.14);
+  box-shadow: 0 1px 2px rgb(15 18 40 / 0.06);
+}
+:root[data-theme="light"] .btn-ghost:hover {
+  background: rgb(var(--night-600) / 0.85);
+}
+/* Silvery text is invisible on white — flip it to a dark gradient in light mode. */
+:root[data-theme="light"] .solar-text {
+  background: linear-gradient(135deg, #0a0a0a, #454545);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Accent-coloured text selection. */
+::selection {
+  background: rgb(var(--solar) / 0.3);
 }
 
 /* Micro-animations */

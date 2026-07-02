@@ -128,7 +128,7 @@ export function ChatPanel({
               key={key++}
               onClick={() => onSelectUser?.(u.id)}
               className="rounded px-1 font-medium hover:underline"
-              style={{ color: u.color ?? "rgb(var(--aurora))", background: `${u.color ?? "#7c88f8"}22` }}
+              style={{ color: u.color ?? "rgb(var(--aurora))", background: `${u.color ?? "#b8b8b8"}22` }}
             >
               @{u.displayName ?? u.username}
             </button>,

@@ -291,7 +291,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
       <span className="mb-1 block text-xs text-muted">{label}</span>
       <input
         type="color"
-        value={value || "#5865f2"}
+        value={value || "#b8b8b8"}
         onChange={(e) => onChange(e.target.value)}
         className="h-10 w-14 cursor-pointer rounded-lg border border-line/15 bg-transparent"
       />
@@ -412,7 +412,7 @@ function AppearanceTab() {
               theme === t ? "border-line/40" : "border-line/10 hover:border-line/20",
             )}
           >
-            <div className={clsx("h-24", t === "dark" ? "bg-[#0c0c0e]" : "bg-[#f2f2f5]")}>
+            <div className={clsx("h-24", t === "dark" ? "bg-[#080808]" : "bg-[#fafafa]")}>
               <div className="flex h-full items-center justify-center gap-2">
                 <span className={clsx("h-8 w-8 rounded-xl", t === "dark" ? "bg-white/90" : "bg-black/85")} />
                 <span className={clsx("h-8 w-16 rounded-xl", t === "dark" ? "bg-white/15" : "bg-black/10")} />

@@ -36,7 +36,7 @@ export default function Landing() {
         </h1>
         <p className="mt-6 max-w-xl text-pretty text-lg text-muted">
           SolarCord is a fast, modern home for your servers, channels, voice rooms and friends —
-          wrapped in a warm, glassy solar aesthetic.
+          wrapped in a clean, glassy monochrome aesthetic.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
           <Link href="/signup" className="btn-solar px-6 py-3 text-base">
@@ -54,7 +54,7 @@ export default function Landing() {
             ["Built to grow", "Servers, discovery, voice and Solar+ — phase by phase."],
           ].map(([title, body]) => (
             <div key={title} className="glass rounded-2xl p-5 text-left">
-              <div className="mb-2 h-9 w-9 rounded-xl bg-gradient-to-br from-solar to-solar-glow shadow-glow" />
+              <div className="mb-2 h-9 w-9 rounded-xl brand-chip shadow-glow" />
               <h3 className="font-semibold">{title}</h3>
               <p className="mt-1 text-sm text-muted">{body}</p>
             </div>

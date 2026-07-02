@@ -57,6 +57,8 @@ export function hexToInt(hex: string): number {
   return parseInt(hex.replace("#", ""), 16) || 0;
 }
 
+// Role colour presets — a distinct, non-Discord spectrum so member roles stay
+// visually distinct (roles can be any colour even though the app theme is mono).
 export const ROLE_SWATCHES = [
-  0x5865f2, 0x57f287, 0xfee75c, 0xeb459e, 0xed4245, 0xf59e0b, 0x9b59b6, 0x1abc9c, 0xe67e22, 0x95a5a6,
+  0x3fe0c8, 0x9b6bff, 0xff5fa2, 0x7c6cf6, 0x4ecee2, 0x48d6a4, 0xffb84d, 0xff6b5a, 0xf68ac4, 0x8b93a7,
 ];

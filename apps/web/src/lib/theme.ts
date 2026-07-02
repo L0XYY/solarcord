@@ -17,12 +17,12 @@ export function setTheme(theme: Theme) {
 }
 
 // ── Solar+ accent themes ──
-export type Accent = "default" | "solar" | "blurple" | "crimson" | "mint" | "violet" | "aqua" | "rose";
+export type Accent = "default" | "solar" | "indigo" | "crimson" | "mint" | "violet" | "aqua" | "rose";
 
 export const ACCENTS: { id: Accent; label: string; swatch: string }[] = [
-  { id: "default", label: "Monochrome", swatch: "#d0d0d6" },
+  { id: "default", label: "Monochrome", swatch: "#fafafa" },
   { id: "solar", label: "Solar", swatch: "#ffb84d" },
-  { id: "blurple", label: "Blurple", swatch: "#7c88f8" },
+  { id: "indigo", label: "Indigo", swatch: "#7c6cf6" },
   { id: "crimson", label: "Crimson", swatch: "#f0606a" },
   { id: "mint", label: "Mint", swatch: "#48d6a4" },
   { id: "violet", label: "Violet", swatch: "#b284ff" },
